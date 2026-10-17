@@ -215,7 +215,7 @@ Core work takes priority over stretch goals. The team will review progress each 
 - **PI4 (expected):** Measure embedding time, query time, memory use, and saved artefact size.
 - **PI5 (advanced):** Run the optional MTG-Jamendo pilot if all FMA requirements are complete by November 20.
 
-## GRADUATE_2_FIRST_NAME GRADUATE_2_LAST_NAME
+## Meet Shah 
 
 **Role:** Projection, clustering, and system evaluation
 
