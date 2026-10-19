@@ -235,6 +235,27 @@ Core work takes priority over stretch goals. The team will review progress each 
 - **PI4 (expected):** Integrate retrieval, clustering, projection, timing, and usability findings into the report.
 - **PI5 (advanced):** Document limitations and lead conversion of the final report to the required ISMIR LaTeX format.
 
+- ## Hanif Muktadi
+
+**Role:** Usability Testing, Feedback Analysis, and Evaluation Reporting
+
+### Objective 1: Evaluate the Usability of the Interactive Browser
+
+* **PI1 (basic):** Define three short browsing tasks to evaluate how users navigate the interactive audio map.
+* **PI2 (basic):** Prepare clear testing instructions and record task completion, difficulties, and user feedback.
+* **PI3 (expected):** Conduct usability tests with 4–6 classmates using the completed Timbrelio application.
+* **PI4 (expected):** Analyze task completion rates, user comments, and common difficulties to identify usability issues.
+* **PI5 (advanced):** Recommend interface improvements based on observed user difficulties and testing results.
+
+### Objective 2: Analyze Results and Contribute to the Final Report
+
+* **PI1 (basic):** Organize usability observations and feedback into structured tables.
+* **PI2 (basic):** Summarize user experiences when browsing, filtering, selecting, and playing audio tracks.
+* **PI3 (expected):** Create tables and visualizations to present usability findings clearly.
+* **PI4 (expected):** Write the usability evaluation methodology, results, and limitations for the final report.
+* **PI5 (advanced):** Integrate usability findings with the system's retrieval and visualization results to develop evidence-based recommendations for future improvements.
+
+
 ## 10. Related Work
 
 Pampalk, Rauber, and Merkl organize music by psychoacoustic similarity and place related tracks near one another on a 2-D map [1]. The SOM-enhanced Jukebox [4] and later multi-view browsing work [5] connect collection structure with interactive exploration. MusicRainbow combines audio similarity with labels in a colour-coded interface [3]. Timbrelio adopts the same overview-and-browse principle with PCA, UMAP, playback, and nearest-neighbour inspection.
