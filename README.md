@@ -155,7 +155,7 @@ Core work takes priority over stretch goals. The team will review progress each 
 
 ## 9. Team Roles and Individual Objectives
 
-## UNDERGRADUATE_1_FIRST_NAME UNDERGRADUATE_1_LAST_NAME
+## Nick Argument
 
 **Role:** Dataset pipeline and conventional features
 
