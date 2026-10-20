@@ -235,25 +235,26 @@ Core work takes priority over stretch goals. The team will review progress each 
 - **PI4 (expected):** Integrate retrieval, clustering, projection, timing, and usability findings into the report.
 - **PI5 (advanced):** Document limitations and lead conversion of the final report to the required ISMIR LaTeX format.
 
-- ## Hanif Muktadi
+ ## Hanif Muktadi
 
-**Role:** Usability Testing, Feedback Analysis, and Evaluation Reporting
+**Role:** System Integration and End-to-End Pipeline Validation
 
-### Objective 1: Evaluate the Usability of the Interactive Browser
+### Objective 1: Integrate the Project Components
 
-* **PI1 (basic):** Define three short browsing tasks to evaluate how users navigate the interactive audio map.
-* **PI2 (basic):** Prepare clear testing instructions and record task completion, difficulties, and user feedback.
-* **PI3 (expected):** Conduct usability tests with 4–6 classmates using the completed Timbrelio application.
-* **PI4 (expected):** Analyze task completion rates, user comments, and common difficulties to identify usability issues.
-* **PI5 (advanced):** Recommend interface improvements based on observed user difficulties and testing results.
+* **PI1 (basic):** Document the input and output requirements of the dataset pipeline, feature extraction, similarity retrieval, projection, clustering, and interactive browser.
+* **PI2 (basic):** Establish a consistent file and data interface for transferring processed features, embeddings, coordinates, clustering labels, and metadata between components.
+* **PI3 (expected):** Integrate the outputs of the individual components into a unified data structure that the interactive application can load.
+* **PI4 (expected):** Identify and resolve integration issues involving file paths, track IDs, data formats, missing outputs, and incompatible configurations.
+* **PI5 (advanced):** Establish a reproducible end-to-end workflow that connects the dataset processing stage to the final interactive browsing application.
 
-### Objective 2: Analyze Results and Contribute to the Final Report
+### Objective 2: Validate the Integrated System
 
-* **PI1 (basic):** Organize usability observations and feedback into structured tables.
-* **PI2 (basic):** Summarize user experiences when browsing, filtering, selecting, and playing audio tracks.
-* **PI3 (expected):** Create tables and visualizations to present usability findings clearly.
-* **PI4 (expected):** Write the usability evaluation methodology, results, and limitations for the final report.
-* **PI5 (advanced):** Integrate usability findings with the system's retrieval and visualization results to develop evidence-based recommendations for future improvements.
+* **PI1 (basic):** Develop an end-to-end checklist covering the project's seven functional requirements.
+* **PI2 (basic):** Verify that processed tracks retain consistent IDs and metadata throughout the complete pipeline.
+* **PI3 (expected):** Verify that the integrated application correctly loads saved projections, clustering labels, and similarity results.
+* **PI4 (expected):** Execute the complete workflow and document integration failures, missing outputs, and unexpected behavior.
+* **PI5 (advanced):** Produce an integration validation report documenting requirement coverage, successful end-to-end workflows, unresolved defects, and the reproducibility of the final system.
+
 
 
 ## 10. Related Work
