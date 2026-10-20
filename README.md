@@ -155,7 +155,7 @@ Core work takes priority over stretch goals. The team will review progress each 
 
 ## 9. Team Roles and Individual Objectives
 
-## Nick Argument
+## Nick Argument (Undergraduate)
 
 **Role:** Dataset pipeline and conventional features
 
@@ -175,7 +175,7 @@ Core work takes priority over stretch goals. The team will review progress each 
 - **PI4 (expected):** Standardize features and inspect missing values, distributions, and correlations.
 - **PI5 (advanced):** Compare a reduced feature set against the full set for retrieval quality and runtime.
 
-## Aaron Sharma
+## Aaron Sharma (Undergraduate)
 
 **Role:** Interactive visualization and playback
 
@@ -195,27 +195,7 @@ Core work takes priority over stretch goals. The team will review progress each 
 - **PI4 (expected):** Write and pilot three short browsing tasks with classmates.
 - **PI5 (advanced):** Compare neighbour results between conventional and learned representations in the interface.
 
-## GRADUATE_1_FIRST_NAME GRADUATE_1_LAST_NAME
-
-**Role:** Learned representation and similarity evaluation
-
-### Objective 1: Integrate and analyse a learned audio representation
-
-- **PI1 (basic):** Integrate OpenL3 and document its input and aggregation settings.
-- **PI2 (basic):** Verify alignment between learned embeddings, conventional features, and metadata.
-- **PI3 (expected):** Compare both representations using Precision@5 and neighbourhood genre agreement.
-- **PI4 (expected):** Test normalization, cosine distance, and PCA preprocessing under fixed conditions.
-- **PI5 (advanced):** Analyse qualitative failure cases and recommend a final representation based on quality, runtime, and interpretability.
-
-### Objective 2: Lead similarity experiments
-
-- **PI1 (basic):** Define reproducible retrieval queries and evaluation scripts.
-- **PI2 (basic):** Establish a random or genre-based comparison baseline.
-- **PI3 (expected):** Measure retrieval performance by genre and identify weak categories.
-- **PI4 (expected):** Measure embedding time, query time, memory use, and saved artefact size.
-- **PI5 (advanced):** Run the optional MTG-Jamendo pilot if all FMA requirements are complete by November 20.
-
-## Meet Shah 
+## Meet Shah (Graduate)
 
 **Role:** Projection, clustering, and system evaluation
 
@@ -235,7 +215,7 @@ Core work takes priority over stretch goals. The team will review progress each 
 - **PI4 (expected):** Integrate retrieval, clustering, projection, timing, and usability findings into the report.
 - **PI5 (advanced):** Document limitations and lead conversion of the final report to the required ISMIR LaTeX format.
 
- ## Hanif Muktadi
+ ## Hanif Muktadi (Graduate)
 
 **Role:** System Integration and End-to-End Pipeline Validation
 
