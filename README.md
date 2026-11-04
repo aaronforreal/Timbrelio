@@ -139,6 +139,30 @@ The minimum successful result is a reproducible end-to-end FMA Small pipeline an
 | Testing and versioning | pytest, Git |
 | Starting reference | Kadenze MIR clustering and visualization notebooks [19] |
 
+### Interactive browser starter
+
+The first UI deliverable renders saved two-dimensional coordinates in a
+Streamlit + Plotly browser. It includes a bundled synthetic coordinate sample;
+FMA audio and generated project artifacts remain outside version control.
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install -e ".[dev]"
+streamlit run app.py
+```
+
+To load a real saved projection, point the app to a CSV containing unique
+`track_id`, `x`, and `y` columns:
+
+```powershell
+$env:TIMBRELIO_COORDINATES_PATH = "C:\path\to\coordinates.csv"
+streamlit run app.py
+```
+
+Run the focused test suite with `pytest`. The browser only reads saved
+coordinates; it does not compute projections or neighbours during interaction.
+
 ## 8. Timeline
 
 | Dates | Deliverable |
