@@ -2,32 +2,86 @@
 
 from __future__ import annotations
 
+import hashlib
+from collections.abc import Iterable
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-from timbrelio.ui.theme import COLORS
+from timbrelio.ui.data import NOISE_LABEL, UNASSIGNED_LABEL
+from timbrelio.ui.theme import CATEGORY_PALETTE, COLORS
+
+SUPPORTED_COLOR_FIELDS = ("genre", "cluster")
 
 
-def build_coordinate_map(coordinates: pd.DataFrame) -> go.Figure:
-    """Build the neutral A1 map without deriving or changing coordinates."""
+def category_color_map(labels: Iterable[object]) -> dict[str, str]:
+    """Return stable colours based on label values rather than row order."""
+
+    normalized_labels = sorted({str(label) for label in labels})
+    colors: dict[str, str] = {}
+    for label in normalized_labels:
+        if label == UNASSIGNED_LABEL:
+            colors[label] = COLORS["mocha_cream"]
+        elif label == NOISE_LABEL:
+            colors[label] = COLORS["muted_ink"]
+        else:
+            digest = hashlib.sha256(label.encode("utf-8")).digest()
+            palette_index = int.from_bytes(digest[:4], "big") % len(CATEGORY_PALETTE)
+            colors[label] = CATEGORY_PALETTE[palette_index]
+    return colors
+
+
+def build_coordinate_map(
+    coordinates: pd.DataFrame, color_by: str | None = None
+) -> go.Figure:
+    """Build an interactive coordinate map with safe, track-aligned hover data."""
+
+    if color_by not in (*SUPPORTED_COLOR_FIELDS, None):
+        supported = ", ".join(SUPPORTED_COLOR_FIELDS)
+        raise ValueError(f"color_by must be one of: {supported}")
+
+    scatter_options: dict[str, object] = {}
+    if color_by is not None:
+        labels = coordinates[color_by].astype(str)
+        scatter_options.update(
+            color=color_by,
+            color_discrete_map=category_color_map(labels),
+            category_orders={color_by: sorted(labels.unique())},
+        )
 
     figure = px.scatter(
         coordinates,
         x="x",
         y="y",
-        custom_data=["track_id"],
+        custom_data=["track_id", "title", "genre", "cluster"],
         render_mode="webgl",
+        **scatter_options,
     )
     figure.update_traces(
         marker={
-            "color": COLORS["mocha_cream"],
             "size": 9,
             "opacity": 0.82,
             "line": {"color": COLORS["deep_burgundy"], "width": 0.6},
         },
-        hovertemplate="<b>Track %{customdata[0]}</b><extra></extra>",
+        hovertemplate=(
+            "<b>%{customdata[1]}</b><br>"
+            "Track %{customdata[0]}<br>"
+            "Genre: %{customdata[2]}<br>"
+            "Cluster: %{customdata[3]}"
+            "<extra></extra>"
+        ),
+        selected={
+            "marker": {
+                "size": 13,
+                "opacity": 1,
+            }
+        },
+        unselected={"marker": {"opacity": 0.35}},
     )
+    if color_by is None:
+        figure.update_traces(marker={"color": COLORS["mocha_cream"]})
+
     figure.update_layout(
         height=610,
         margin={"l": 24, "r": 24, "t": 24, "b": 24},
@@ -43,7 +97,14 @@ def build_coordinate_map(coordinates: pd.DataFrame) -> go.Figure:
             "font": {"color": COLORS["ink"]},
         },
         dragmode="pan",
-        showlegend=False,
+        showlegend=color_by is not None,
+        legend={
+            "title": {"text": color_by.title() if color_by else ""},
+            "bgcolor": "rgba(255, 249, 239, 0.92)",
+            "bordercolor": "rgba(45, 35, 33, 0.16)",
+            "borderwidth": 1,
+        },
+        uirevision=f"coordinate-map-{color_by or 'neutral'}",
     )
     figure.update_xaxes(
         title=None,

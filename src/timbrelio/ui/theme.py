@@ -10,6 +10,18 @@ COLORS = {
     "porcelain": "#FFF9EF",
 }
 
+# A categorical palette with strong light/dark separation on the porcelain map.
+CATEGORY_PALETTE = (
+    "#722F37",
+    "#26636B",
+    "#8A5A24",
+    "#51458C",
+    "#3F6B3A",
+    "#A03E63",
+    "#2F5E8E",
+    "#8C4A32",
+)
+
 APP_CSS = f"""
 :root {{
   --canvas: {COLORS['canvas']};
