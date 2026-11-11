@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "timbrelio"
+version = "0.1.0"
+description = "Content-based visualization and browsing of music tracks"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+  "numpy==1.26.4",
+  "pandas==2.2.3",
+  "plotly==6.9.0",
+  "streamlit==1.42.2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==8.3.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "-q --basetemp=.pytest-tmp"
+pythonpath = ["src"]
+testpaths = ["tests"]
+
