@@ -10,7 +10,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 from timbrelio.ui.data import NOISE_LABEL, UNASSIGNED_LABEL
-from timbrelio.ui.theme import CATEGORY_PALETTE, COLORS
+from timbrelio.ui.theme import COLORS
 
 SUPPORTED_COLOR_FIELDS = ("genre", "cluster")
 
@@ -27,8 +27,8 @@ def category_color_map(labels: Iterable[object]) -> dict[str, str]:
             colors[label] = COLORS["muted_ink"]
         else:
             digest = hashlib.sha256(label.encode("utf-8")).digest()
-            palette_index = int.from_bytes(digest[:4], "big") % len(CATEGORY_PALETTE)
-            colors[label] = CATEGORY_PALETTE[palette_index]
+            hue = int.from_bytes(digest[:4], "big") % 360
+            colors[label] = f"hsl({hue}, 42%, 38%)"
     return colors
 
 

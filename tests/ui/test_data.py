@@ -82,6 +82,24 @@ def test_read_coordinates_makes_missing_display_metadata_explicit(tmp_path):
     assert result["cluster"].tolist() == [UNASSIGNED_LABEL, UNASSIGNED_LABEL]
 
 
+def test_read_coordinates_normalizes_numeric_clusters_with_missing_values(tmp_path):
+    path = write_coordinates(
+        tmp_path,
+        pd.DataFrame(
+            {
+                "track_id": ["TRK-1", "TRK-2", "TRK-3"],
+                "x": [0, 1, 2],
+                "y": [2, 1, 0],
+                "cluster": [0, -1, None],
+            }
+        ),
+    )
+
+    result = read_coordinates(path)
+
+    assert result["cluster"].tolist() == ["0", NOISE_LABEL, UNASSIGNED_LABEL]
+
+
 @pytest.mark.parametrize(
     ("frame", "message"),
     [

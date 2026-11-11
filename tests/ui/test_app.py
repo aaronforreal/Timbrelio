@@ -7,6 +7,19 @@ def test_app_starts_with_bundled_coordinates(monkeypatch):
     app = AppTest.from_file("app.py", default_timeout=15).run()
 
     assert not app.exception
+    assert app.radio[0].label == "Colour points by"
+    assert app.radio[0].value == "Genre"
+    assert len(app.get("plotly_chart")) == 1
+
+
+def test_app_switches_map_colour_mode(monkeypatch):
+    monkeypatch.delenv("TIMBRELIO_COORDINATES_PATH", raising=False)
+    app = AppTest.from_file("app.py", default_timeout=15).run()
+
+    app.radio[0].set_value("Cluster").run()
+
+    assert not app.exception
+    assert app.radio[0].value == "Cluster"
     assert len(app.get("plotly_chart")) == 1
 
 

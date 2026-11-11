@@ -94,5 +94,13 @@ def _normalized_cluster_column(coordinates: pd.DataFrame) -> pd.Series:
     values = _normalized_text_column(
         coordinates, "cluster", fallback=UNASSIGNED_LABEL
     )
-    return values.mask(values.eq("-1"), NOISE_LABEL)
+    numeric_values = pd.to_numeric(values, errors="coerce")
+    is_integer = (
+        np.isfinite(numeric_values) & numeric_values.mod(1).eq(0)
+    ).fillna(False)
+    integer_values = (
+        numeric_values.where(is_integer).round().astype("Int64").astype("string")
+    )
+    values = values.mask(is_integer, integer_values)
+    return values.mask(numeric_values.eq(-1).fillna(False), NOISE_LABEL)
 

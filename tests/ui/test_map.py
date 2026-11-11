@@ -42,6 +42,7 @@ def test_category_color_map_is_stable_across_label_order():
 
     assert forward == reverse
     assert forward["Jazz"] == category_color_map(["Jazz"])["Jazz"]
+    assert len(set(forward.values())) == len(forward)
 
 
 def test_category_color_map_distinguishes_noise_and_unassigned():
