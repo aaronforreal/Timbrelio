@@ -152,21 +152,26 @@ python -m pip install -e ".[dev]"
 streamlit run app.py
 ```
 
-To load a real saved projection, point the app to a CSV containing unique
-`track_id`, `x`, and `y` columns. Optional `title`, `genre`, and `cluster`
-columns enable detailed hover information and labelled colour modes. Missing
-genre or cluster values appear as `Unassigned`; cluster `-1` appears as
-`Noise`.
+To load real saved projections, point the app to a CSV containing `track_id`,
+`projection`, `x`, and `y` columns. Use `PCA` or `UMAP` in the projection
+column and include one row per track for each available map. Track IDs must be
+unique within each representation and projection. The optional
+`representation`, `title`, `genre`, and `cluster` columns enable configuration
+alignment, detailed hover information, and labelled colour modes. Missing
+representation values default to `Conventional`; missing genre or cluster
+values appear as `Unassigned`; cluster `-1` appears as `Noise`.
 
 ```powershell
 $env:TIMBRELIO_COORDINATES_PATH = "C:\path\to\coordinates.csv"
 streamlit run app.py
 ```
 
-Run the focused test suite with `pytest`. Drag to pan, scroll to zoom, use the
-Plotly home control to reset the view, and switch between deterministic genre
-and cluster colours above the map. The browser only reads saved coordinates;
-it does not compute projections or neighbours during interaction.
+Run the focused test suite with `pytest`. Switch between saved PCA and UMAP
+coordinates, drag to pan, scroll to zoom, use the Plotly home control to reset
+the view, and switch between deterministic genre and cluster colours above the
+map. The browser only reads saved coordinates; it does not compute projections
+or neighbours during interaction. Neighbours remain sourced from the original
+feature space rather than 2-D map distance.
 
 ## 8. Timeline
 

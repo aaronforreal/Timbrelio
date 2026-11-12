@@ -11,6 +11,12 @@ REQUIRED_COLUMNS = ("track_id", "x", "y")
 UNAVAILABLE_TITLE = "Unavailable"
 UNASSIGNED_LABEL = "Unassigned"
 NOISE_LABEL = "Noise"
+DEFAULT_REPRESENTATION = "Conventional"
+UNSPECIFIED_PROJECTION = "Unspecified"
+PROJECTION_LABELS = {
+    "pca": "PCA",
+    "umap": "UMAP",
+}
 
 
 class CoordinateDataError(ValueError):
@@ -51,12 +57,21 @@ def read_coordinates(path: Path) -> pd.DataFrame:
     missing_ids = coordinates["track_id"].isna() | coordinates["track_id"].eq("")
     if missing_ids.any():
         raise CoordinateDataError("Every coordinate row must have a non-empty track_id.")
-    if coordinates["track_id"].duplicated().any():
-        duplicate_ids = coordinates.loc[
-            coordinates["track_id"].duplicated(keep=False), "track_id"
-        ].unique()
+    coordinates["representation"] = _normalized_text_column(
+        coordinates, "representation", fallback=DEFAULT_REPRESENTATION
+    )
+    coordinates["projection"] = _normalized_projection_column(coordinates)
+
+    duplicate_rows = coordinates.duplicated(
+        subset=["representation", "projection", "track_id"], keep=False
+    )
+    if duplicate_rows.any():
+        duplicate_ids = coordinates.loc[duplicate_rows, "track_id"].unique()
         preview = ", ".join(str(track_id) for track_id in duplicate_ids[:3])
-        raise CoordinateDataError(f"track_id values must be unique. Duplicates: {preview}")
+        raise CoordinateDataError(
+            "track_id values must be unique within each representation and "
+            f"projection. Duplicates: {preview}"
+        )
 
     for axis in ("x", "y"):
         numeric_values = pd.to_numeric(coordinates[axis], errors="coerce")
@@ -103,4 +118,14 @@ def _normalized_cluster_column(coordinates: pd.DataFrame) -> pd.Series:
     )
     values = values.mask(is_integer, integer_values)
     return values.mask(numeric_values.eq(-1).fillna(False), NOISE_LABEL)
+
+
+def _normalized_projection_column(coordinates: pd.DataFrame) -> pd.Series:
+    """Normalize known projection names and expose missing configuration."""
+
+    values = _normalized_text_column(
+        coordinates, "projection", fallback=UNSPECIFIED_PROJECTION
+    )
+    normalized = values.str.casefold().map(PROJECTION_LABELS)
+    return normalized.fillna(values).astype("string")
 

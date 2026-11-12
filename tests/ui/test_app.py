@@ -7,8 +7,10 @@ def test_app_starts_with_bundled_coordinates(monkeypatch):
     app = AppTest.from_file("app.py", default_timeout=15).run()
 
     assert not app.exception
-    assert app.radio[0].label == "Colour points by"
-    assert app.radio[0].value == "Genre"
+    assert app.radio[0].label == "Projection"
+    assert app.radio[0].value == "UMAP"
+    assert app.radio[1].label == "Colour points by"
+    assert app.radio[1].value == "Genre"
     assert len(app.get("plotly_chart")) == 1
 
 
@@ -16,10 +18,22 @@ def test_app_switches_map_colour_mode(monkeypatch):
     monkeypatch.delenv("TIMBRELIO_COORDINATES_PATH", raising=False)
     app = AppTest.from_file("app.py", default_timeout=15).run()
 
-    app.radio[0].set_value("Cluster").run()
+    app.radio[1].set_value("Cluster").run()
 
     assert not app.exception
-    assert app.radio[0].value == "Cluster"
+    assert app.radio[1].value == "Cluster"
+    assert len(app.get("plotly_chart")) == 1
+
+
+def test_app_switches_between_saved_projections(monkeypatch):
+    monkeypatch.delenv("TIMBRELIO_COORDINATES_PATH", raising=False)
+    app = AppTest.from_file("app.py", default_timeout=15).run()
+
+    app.radio[0].set_value("PCA").run()
+
+    assert not app.exception
+    assert app.radio[0].value == "PCA"
+    assert app.session_state["map_projection"] == "PCA"
     assert len(app.get("plotly_chart")) == 1
 
 
@@ -43,5 +57,19 @@ def test_app_explains_empty_artifact(monkeypatch, tmp_path):
 
     assert not app.exception
     assert "contains no tracks yet" in app.info[-1].value
+    assert len(app.get("plotly_chart")) == 0
+
+
+def test_app_reports_artifact_without_supported_projection(monkeypatch, tmp_path):
+    artifact = tmp_path / "coordinates.csv"
+    artifact.write_text(
+        "track_id,projection,x,y\nTRK-1,t-SNE,1,2\n", encoding="utf-8"
+    )
+    monkeypatch.setenv("TIMBRELIO_COORDINATES_PATH", str(artifact))
+
+    app = AppTest.from_file("app.py", default_timeout=15).run()
+
+    assert not app.exception
+    assert "no supported PCA or UMAP" in app.warning[0].value
     assert len(app.get("plotly_chart")) == 0
 

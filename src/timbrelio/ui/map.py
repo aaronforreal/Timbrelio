@@ -33,7 +33,10 @@ def category_color_map(labels: Iterable[object]) -> dict[str, str]:
 
 
 def build_coordinate_map(
-    coordinates: pd.DataFrame, color_by: str | None = None
+    coordinates: pd.DataFrame,
+    color_by: str | None = None,
+    *,
+    viewport_key: str | None = None,
 ) -> go.Figure:
     """Build an interactive coordinate map with safe, track-aligned hover data."""
 
@@ -104,7 +107,7 @@ def build_coordinate_map(
             "bordercolor": "rgba(45, 35, 33, 0.16)",
             "borderwidth": 1,
         },
-        uirevision=f"coordinate-map-{color_by or 'neutral'}",
+        uirevision=f"coordinate-map-{viewport_key or 'default'}",
     )
     figure.update_xaxes(
         title=None,
