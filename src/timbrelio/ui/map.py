@@ -33,7 +33,9 @@ def category_color_map(labels: Iterable[object]) -> dict[str, str]:
 
 
 def build_coordinate_map(
-    coordinates: pd.DataFrame, color_by: str | None = None
+    coordinates: pd.DataFrame,
+    color_by: str | None = None,
+    selected_track_id: str | None = None,
 ) -> go.Figure:
     """Build an interactive coordinate map with safe, track-aligned hover data."""
 
@@ -82,6 +84,14 @@ def build_coordinate_map(
     if color_by is None:
         figure.update_traces(marker={"color": COLORS["mocha_cream"]})
 
+    if selected_track_id is not None:
+        for trace in figure.data:
+            trace.selectedpoints = [
+                index
+                for index, custom_data in enumerate(trace.customdata)
+                if str(custom_data[0]) == selected_track_id
+            ]
+
     figure.update_layout(
         height=610,
         margin={"l": 24, "r": 24, "t": 24, "b": 24},
@@ -97,6 +107,7 @@ def build_coordinate_map(
             "font": {"color": COLORS["ink"]},
         },
         dragmode="pan",
+        clickmode="event+select",
         showlegend=color_by is not None,
         legend={
             "title": {"text": color_by.title() if color_by else ""},
