@@ -153,20 +153,29 @@ streamlit run app.py
 ```
 
 To load a real saved projection, point the app to a CSV containing unique
-`track_id`, `x`, and `y` columns. Optional `title`, `genre`, and `cluster`
-columns enable detailed hover information and labelled colour modes. Missing
-genre or cluster values appear as `Unassigned`; cluster `-1` appears as
-`Noise`.
+`track_id`, `x`, and `y` columns. Optional `title`, `artist`, `genre`,
+`cluster`, `representation`, `audio_path`, and `audio_status` columns enable
+hover information, selected-track details, labelled colour modes, and local
+playback. Missing genre or cluster values appear as `Unassigned`; cluster `-1`
+appears as `Noise`.
+
+Audio paths are resolved beneath `TIMBRELIO_AUDIO_ROOT` and must not escape
+that directory. Store relative paths such as `000/000002.mp3` in the artifact;
+do not commit audio or machine-specific absolute paths. WAV, MP3, OGG, FLAC,
+and M4A files are supported. Missing, unreadable, corrupt, or explicitly
+unavailable audio remains visible as a disabled playback state.
 
 ```powershell
 $env:TIMBRELIO_COORDINATES_PATH = "C:\path\to\coordinates.csv"
+$env:TIMBRELIO_AUDIO_ROOT = "C:\path\to\fma_small"
 streamlit run app.py
 ```
 
 Run the focused test suite with `pytest`. Drag to pan, scroll to zoom, use the
-Plotly home control to reset the view, and switch between deterministic genre
-and cluster colours above the map. The browser only reads saved coordinates;
-it does not compute projections or neighbours during interaction.
+Plotly home control to reset the view, switch between deterministic genre and
+cluster colours, and select a point to inspect metadata or play available
+audio. The browser only reads saved coordinates and local audio; it does not
+compute projections or neighbours during interaction.
 
 ## 8. Timeline
 

@@ -10,8 +10,17 @@ import streamlit as st
 from timbrelio.ui.data import CoordinateDataError, read_coordinates
 from timbrelio.ui.map import build_coordinate_map
 from timbrelio.ui.theme import APP_CSS
+from timbrelio.ui.track import (
+    AudioSource,
+    TrackDetails,
+    resolve_audio_source,
+    selected_track_id_from_event,
+    track_details_for_id,
+)
 
 DEFAULT_COORDINATES_PATH = Path("data/sample_coordinates.csv")
+DEFAULT_AUDIO_ROOT = Path("data/audio")
+SELECTED_TRACK_KEY = "selected_track_id"
 
 
 @st.cache_data(show_spinner=False)
@@ -26,6 +35,36 @@ def configured_coordinates_path() -> Path:
     """Return the configured artifact path or the bundled sample."""
 
     return Path(os.environ.get("TIMBRELIO_COORDINATES_PATH", DEFAULT_COORDINATES_PATH))
+
+
+def configured_audio_root() -> Path:
+    """Return the root under which manifest audio references are allowed."""
+
+    return Path(os.environ.get("TIMBRELIO_AUDIO_ROOT", DEFAULT_AUDIO_ROOT))
+
+
+def render_track_details(details: TrackDetails, audio_source: AudioSource) -> None:
+    """Render selected-track metadata and a recoverable playback state."""
+
+    with st.container(border=True):
+        st.caption("SELECTED TRACK")
+        st.subheader(details.title)
+        metadata_columns = st.columns(3)
+        metadata_columns[0].markdown(f"**Artist**  \n{details.artist}")
+        metadata_columns[1].markdown(f"**Genre**  \n{details.genre}")
+        metadata_columns[2].markdown(f"**Cluster**  \n{details.cluster}")
+        st.caption(
+            f"Track ID: {details.track_id} · Representation: {details.representation}"
+        )
+        if audio_source.available:
+            st.audio(audio_source.path, format=audio_source.mime_type)
+        else:
+            st.button(
+                "Audio unavailable",
+                disabled=True,
+                key=f"audio-unavailable-{details.track_id}",
+            )
+            st.caption(audio_source.message)
 
 
 def main() -> None:
@@ -43,7 +82,7 @@ def main() -> None:
         st.markdown('<p class="brand-wordmark">timbrelio.</p>', unsafe_allow_html=True)
         st.markdown(
             "Browse a music collection by its projected audio characteristics. "
-            "Filters, playback, and neighbour comparison arrive in later deliverables."
+            "Select a point to inspect its metadata and play available local audio."
         )
         st.divider()
         st.caption("ACTIVE ARTIFACT")
@@ -100,20 +139,49 @@ def main() -> None:
         f"<strong>{len(coordinates):,} tracks</strong></div>",
         unsafe_allow_html=True,
     )
-    st.plotly_chart(
-        build_coordinate_map(coordinates, color_by=color_label.lower()),
+    selected_track_id = st.session_state.get(SELECTED_TRACK_KEY)
+    selection_event = st.plotly_chart(
+        build_coordinate_map(
+            coordinates,
+            color_by=color_label.lower(),
+            selected_track_id=selected_track_id,
+        ),
         use_container_width=True,
         theme=None,
+        key="coordinate-map",
+        on_select="rerun",
+        selection_mode="points",
         config={
             "displaylogo": False,
             "responsive": True,
             "scrollZoom": True,
         },
     )
+    event_track_id = selected_track_id_from_event(selection_event)
+    if event_track_id is not None and event_track_id != selected_track_id:
+        st.session_state[SELECTED_TRACK_KEY] = event_track_id
+        st.rerun()
     st.caption(
         "Drag to pan, scroll to zoom, and use the Plotly home control to reset the map. "
-        "Hover over a point for its track, title, genre, and cluster."
+        "Hover for metadata or select a point to inspect and play the track."
     )
+
+    if selected_track_id is None:
+        st.info("Select a point on the map to inspect its track details and audio.")
+        return
+
+    details = track_details_for_id(coordinates, selected_track_id)
+    if details is None:
+        st.session_state[SELECTED_TRACK_KEY] = None
+        st.warning("The selected track is no longer available in this map.")
+        return
+
+    audio_source = resolve_audio_source(
+        details.audio_path,
+        configured_audio_root(),
+        declared_status=details.audio_status,
+    )
+    render_track_details(details, audio_source)
 
 
 if __name__ == "__main__":

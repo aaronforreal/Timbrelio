@@ -81,3 +81,19 @@ def test_coloured_map_uses_non_colour_selected_marker_cue():
         assert trace.selected.marker.opacity == 1
         assert trace.unselected.marker.opacity == 0.35
 
+
+def test_selected_track_id_is_reapplied_to_the_correct_trace():
+    figure = build_coordinate_map(
+        coordinate_frame(), color_by="genre", selected_track_id="TRK-2"
+    )
+
+    selected_by_genre = {
+        trace.name: list(trace.selectedpoints) for trace in figure.data
+    }
+    assert selected_by_genre == {
+        "Jazz": [],
+        "Rock": [0],
+        UNASSIGNED_LABEL: [],
+    }
+    assert figure.layout.clickmode == "event+select"
+
