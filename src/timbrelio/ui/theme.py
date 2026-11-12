@@ -38,9 +38,11 @@ APP_CSS = f"""
 }}
 
 .block-container {{
+  box-sizing: border-box;
   max-width: 1440px;
   padding-top: clamp(2rem, 5vw, 4.5rem);
   padding-bottom: 3rem;
+  width: 100%;
 }}
 
 .brand-wordmark {{
@@ -100,11 +102,27 @@ APP_CSS = f"""
   font-size: 0.9rem;
 }}
 
+[data-testid="stRadio"] {{
+  background: rgba(255, 249, 239, 0.72);
+  border: 1px solid rgba(45, 35, 33, 0.12);
+  border-radius: 1rem;
+  box-sizing: border-box;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem 0.35rem;
+}}
+
+[data-testid="stRadio"] > label {{
+  color: var(--deep-burgundy);
+  font-weight: 700;
+}}
+
 [data-testid="stPlotlyChart"] {{
   background: var(--cosmic-latte);
   border: 1px solid rgba(45, 35, 33, 0.13);
   border-radius: 1.5rem;
+  box-sizing: border-box;
   box-shadow: 0 20px 60px rgba(76, 49, 45, 0.09);
+  max-width: 100%;
   overflow: hidden;
   padding: clamp(0.3rem, 1vw, 0.75rem);
 }}

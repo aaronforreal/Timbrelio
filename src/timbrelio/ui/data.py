@@ -8,6 +8,9 @@ import numpy as np
 import pandas as pd
 
 REQUIRED_COLUMNS = ("track_id", "x", "y")
+UNAVAILABLE_TITLE = "Unavailable"
+UNASSIGNED_LABEL = "Unassigned"
+NOISE_LABEL = "Noise"
 
 
 class CoordinateDataError(ValueError):
@@ -62,5 +65,42 @@ def read_coordinates(path: Path) -> pd.DataFrame:
             raise CoordinateDataError(f"Column {axis} must contain only finite numbers.")
         coordinates[axis] = numeric_values.astype(float)
 
+    coordinates["title"] = _normalized_text_column(
+        coordinates, "title", fallback=UNAVAILABLE_TITLE
+    )
+    coordinates["genre"] = _normalized_text_column(
+        coordinates, "genre", fallback=UNASSIGNED_LABEL
+    )
+    coordinates["cluster"] = _normalized_cluster_column(coordinates)
+
     return coordinates
+
+
+def _normalized_text_column(
+    coordinates: pd.DataFrame, column: str, *, fallback: str
+) -> pd.Series:
+    """Return trimmed display text with missing values made explicit."""
+
+    if column not in coordinates:
+        return pd.Series(fallback, index=coordinates.index, dtype="string")
+
+    values = coordinates[column].astype("string").str.strip()
+    return values.mask(values.isna() | values.eq(""), fallback)
+
+
+def _normalized_cluster_column(coordinates: pd.DataFrame) -> pd.Series:
+    """Normalize cluster labels while preserving HDBSCAN's noise category."""
+
+    values = _normalized_text_column(
+        coordinates, "cluster", fallback=UNASSIGNED_LABEL
+    )
+    numeric_values = pd.to_numeric(values, errors="coerce")
+    is_integer = (
+        np.isfinite(numeric_values) & numeric_values.mod(1).eq(0)
+    ).fillna(False)
+    integer_values = (
+        numeric_values.where(is_integer).round().astype("Int64").astype("string")
+    )
+    values = values.mask(is_integer, integer_values)
+    return values.mask(numeric_values.eq(-1).fillna(False), NOISE_LABEL)
 

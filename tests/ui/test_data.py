@@ -1,7 +1,13 @@
 import pandas as pd
 import pytest
 
-from timbrelio.ui.data import CoordinateDataError, read_coordinates
+from timbrelio.ui.data import (
+    CoordinateDataError,
+    NOISE_LABEL,
+    UNASSIGNED_LABEL,
+    UNAVAILABLE_TITLE,
+    read_coordinates,
+)
 
 
 def write_coordinates(tmp_path, frame):
@@ -18,7 +24,9 @@ def test_read_coordinates_accepts_valid_rows(tmp_path):
                 "track_id": ["TRK-1", "TRK-2"],
                 "x": [0.5, -1.25],
                 "y": [2, 3],
+                "title": ["  First Light ", "Night Drive"],
                 "genre": ["Jazz", "Rock"],
+                "cluster": [2, -1],
             }
         ),
     )
@@ -28,7 +36,9 @@ def test_read_coordinates_accepts_valid_rows(tmp_path):
     assert result["track_id"].tolist() == ["TRK-1", "TRK-2"]
     assert result["x"].dtype.kind == "f"
     assert result["y"].dtype.kind == "f"
-    assert "genre" in result.columns
+    assert result["title"].tolist() == ["First Light", "Night Drive"]
+    assert result["genre"].tolist() == ["Jazz", "Rock"]
+    assert result["cluster"].tolist() == ["2", NOISE_LABEL]
 
 
 def test_read_coordinates_accepts_header_only_artifact(tmp_path):
@@ -40,7 +50,54 @@ def test_read_coordinates_accepts_header_only_artifact(tmp_path):
     result = read_coordinates(path)
 
     assert result.empty
-    assert list(result.columns) == ["track_id", "x", "y"]
+    assert list(result.columns) == [
+        "track_id",
+        "x",
+        "y",
+        "title",
+        "genre",
+        "cluster",
+    ]
+
+
+def test_read_coordinates_makes_missing_display_metadata_explicit(tmp_path):
+    path = write_coordinates(
+        tmp_path,
+        pd.DataFrame(
+            {
+                "track_id": ["TRK-1", "TRK-2"],
+                "x": [0, 1],
+                "y": [1, 0],
+                "title": [None, "  "],
+                "genre": ["", None],
+                "cluster": [None, "  "],
+            }
+        ),
+    )
+
+    result = read_coordinates(path)
+
+    assert result["title"].tolist() == [UNAVAILABLE_TITLE, UNAVAILABLE_TITLE]
+    assert result["genre"].tolist() == [UNASSIGNED_LABEL, UNASSIGNED_LABEL]
+    assert result["cluster"].tolist() == [UNASSIGNED_LABEL, UNASSIGNED_LABEL]
+
+
+def test_read_coordinates_normalizes_numeric_clusters_with_missing_values(tmp_path):
+    path = write_coordinates(
+        tmp_path,
+        pd.DataFrame(
+            {
+                "track_id": ["TRK-1", "TRK-2", "TRK-3"],
+                "x": [0, 1, 2],
+                "y": [2, 1, 0],
+                "cluster": [0, -1, None],
+            }
+        ),
+    )
+
+    result = read_coordinates(path)
+
+    assert result["cluster"].tolist() == ["0", NOISE_LABEL, UNASSIGNED_LABEL]
 
 
 @pytest.mark.parametrize(

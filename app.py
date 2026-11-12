@@ -58,8 +58,8 @@ def main() -> None:
           <p class="eyebrow">CONTENT-BASED MUSIC EXPLORATION</p>
           <h1>Explore the soundscape</h1>
           <p class="hero-copy">
-            A first view of Timbrelio's saved two-dimensional track map.
-            Every point is anchored by a stable track ID.
+            Navigate Timbrelio's saved two-dimensional track map and reveal
+            how genres and clusters are distributed across the soundscape.
           </p>
         </header>
         """,
@@ -88,12 +88,20 @@ def main() -> None:
         )
         return
 
+    color_label = st.radio(
+        "Colour points by",
+        options=("Genre", "Cluster"),
+        horizontal=True,
+        help="The legend and point colours update without changing track coordinates.",
+    )
+
     st.markdown(
-        f'<div class="map-meta"><span>TRACK MAP</span><strong>{len(coordinates):,} tracks</strong></div>',
+        f'<div class="map-meta"><span>TRACK MAP · {color_label.upper()}</span>'
+        f"<strong>{len(coordinates):,} tracks</strong></div>",
         unsafe_allow_html=True,
     )
     st.plotly_chart(
-        build_coordinate_map(coordinates),
+        build_coordinate_map(coordinates, color_by=color_label.lower()),
         use_container_width=True,
         theme=None,
         config={
@@ -103,8 +111,8 @@ def main() -> None:
         },
     )
     st.caption(
-        "Use the Plotly toolbar or scroll to explore the saved projection. "
-        "Neighbour retrieval will use the original feature space, not visual map distance."
+        "Drag to pan, scroll to zoom, and use the Plotly home control to reset the map. "
+        "Hover over a point for its track, title, genre, and cluster."
     )
 
 

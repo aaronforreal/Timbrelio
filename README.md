@@ -153,15 +153,20 @@ streamlit run app.py
 ```
 
 To load a real saved projection, point the app to a CSV containing unique
-`track_id`, `x`, and `y` columns:
+`track_id`, `x`, and `y` columns. Optional `title`, `genre`, and `cluster`
+columns enable detailed hover information and labelled colour modes. Missing
+genre or cluster values appear as `Unassigned`; cluster `-1` appears as
+`Noise`.
 
 ```powershell
 $env:TIMBRELIO_COORDINATES_PATH = "C:\path\to\coordinates.csv"
 streamlit run app.py
 ```
 
-Run the focused test suite with `pytest`. The browser only reads saved
-coordinates; it does not compute projections or neighbours during interaction.
+Run the focused test suite with `pytest`. Drag to pan, scroll to zoom, use the
+Plotly home control to reset the view, and switch between deterministic genre
+and cluster colours above the map. The browser only reads saved coordinates;
+it does not compute projections or neighbours during interaction.
 
 ## 8. Timeline
 
