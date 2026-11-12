@@ -116,6 +116,18 @@ APP_CSS = f"""
   font-weight: 700;
 }}
 
+[data-testid="stVerticalBlockBorderWrapper"] {{
+  background: rgba(255, 249, 239, 0.66);
+  border-color: rgba(45, 35, 33, 0.13) !important;
+  border-radius: 1rem;
+}}
+
+[data-testid="stVerticalBlockBorderWrapper"] h4 {{
+  color: var(--deep-burgundy);
+  font-family: Georgia, 'Times New Roman', serif;
+  margin: 0;
+}}
+
 [data-testid="stPlotlyChart"] {{
   background: var(--cosmic-latte);
   border: 1px solid rgba(45, 35, 33, 0.13);
@@ -137,6 +149,15 @@ APP_CSS = f"""
     padding-left: 1rem;
     padding-right: 1rem;
     padding-top: 1.75rem;
+  }}
+
+  [data-testid="stHorizontalBlock"] {{
+    flex-direction: column;
+  }}
+
+  [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] {{
+    flex: 1 1 auto !important;
+    width: 100% !important;
   }}
 
   .hero h1 {{
