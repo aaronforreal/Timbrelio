@@ -81,3 +81,18 @@ def test_coloured_map_uses_non_colour_selected_marker_cue():
         assert trace.selected.marker.opacity == 1
         assert trace.unselected.marker.opacity == 0.35
 
+
+def test_map_viewport_revision_changes_only_with_coordinate_source():
+    pca = build_coordinate_map(
+        coordinate_frame(), color_by="genre", viewport_key="Conventional-PCA"
+    )
+    recolored_pca = build_coordinate_map(
+        coordinate_frame(), color_by="cluster", viewport_key="Conventional-PCA"
+    )
+    umap = build_coordinate_map(
+        coordinate_frame(), color_by="genre", viewport_key="Conventional-UMAP"
+    )
+
+    assert pca.layout.uirevision == recolored_pca.layout.uirevision
+    assert pca.layout.uirevision != umap.layout.uirevision
+
