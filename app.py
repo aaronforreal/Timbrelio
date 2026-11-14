@@ -9,6 +9,13 @@ import streamlit as st
 
 from timbrelio.ui.data import CoordinateDataError, read_coordinates
 from timbrelio.ui.map import build_coordinate_map
+from timbrelio.ui.neighbours import (
+    RESULT_LIMIT,
+    NeighbourDataError,
+    NeighbourResult,
+    neighbours_for_seed,
+    read_neighbours,
+)
 from timbrelio.ui.theme import APP_CSS
 from timbrelio.ui.track import (
     AudioSource,
@@ -20,7 +27,9 @@ from timbrelio.ui.track import (
 
 DEFAULT_COORDINATES_PATH = Path("data/sample_coordinates.csv")
 DEFAULT_AUDIO_ROOT = Path("data/audio")
+DEFAULT_NEIGHBOURS_PATH = Path("data/sample_neighbours.csv")
 SELECTED_TRACK_KEY = "selected_track_id"
+HIGHLIGHTED_NEIGHBOUR_KEY = "highlighted_neighbour_id"
 
 
 @st.cache_data(show_spinner=False)
@@ -29,6 +38,14 @@ def load_coordinates(path: str, modified_at: int | None):
 
     del modified_at
     return read_coordinates(Path(path))
+
+
+@st.cache_data(show_spinner=False)
+def load_neighbours(path: str, modified_at: int | None):
+    """Load immutable, precomputed neighbour results once per file change."""
+
+    del modified_at
+    return read_neighbours(Path(path))
 
 
 def configured_coordinates_path() -> Path:
@@ -41,6 +58,12 @@ def configured_audio_root() -> Path:
     """Return the root under which manifest audio references are allowed."""
 
     return Path(os.environ.get("TIMBRELIO_AUDIO_ROOT", DEFAULT_AUDIO_ROOT))
+
+
+def configured_neighbours_path() -> Path:
+    """Return the configured saved-neighbour artifact or bundled sample."""
+
+    return Path(os.environ.get("TIMBRELIO_NEIGHBOURS_PATH", DEFAULT_NEIGHBOURS_PATH))
 
 
 def render_track_details(details: TrackDetails, audio_source: AudioSource) -> None:
@@ -67,6 +90,48 @@ def render_track_details(details: TrackDetails, audio_source: AudioSource) -> No
             st.caption(audio_source.message)
 
 
+def render_neighbours(results: list[NeighbourResult]) -> None:
+    """Render ranked saved results without replacing the selected seed track."""
+
+    st.markdown("### Five nearest tracks")
+    st.caption(
+        "Saved results from the original standardized feature space — not distances "
+        "on the two-dimensional map."
+    )
+    if not results:
+        st.info("No saved neighbours are available for this track and representation.")
+        return
+
+    if len(results) < RESULT_LIMIT:
+        st.warning(
+            f"Only {len(results)} of {RESULT_LIMIT} saved neighbours are available."
+        )
+
+    for result in results:
+        with st.container(border=True):
+            identity, action = st.columns([4, 1])
+            with identity:
+                st.caption(f"RANK {result.rank} · {result.track_id}")
+                st.markdown(f"**{result.title}**")
+                st.caption(
+                    f"{result.artist} · {result.genre} · Cluster {result.cluster} · "
+                    f"{result.metric_name.title()} {result.metric_value:.3f}"
+                )
+            with action:
+                if st.button(
+                    "Locate on map",
+                    key=f"locate-neighbour-{result.track_id}",
+                    disabled=not result.on_map,
+                    help=(
+                        "Highlight this neighbour without changing the selected track."
+                        if result.on_map
+                        else "This neighbour is not present on the current map."
+                    ),
+                ):
+                    st.session_state[HIGHLIGHTED_NEIGHBOUR_KEY] = result.track_id
+                    st.rerun()
+
+
 def main() -> None:
     st.set_page_config(
         page_title="Timbrelio · Explore the soundscape",
@@ -77,6 +142,7 @@ def main() -> None:
     st.markdown(f"<style>{APP_CSS}</style>", unsafe_allow_html=True)
 
     coordinates_path = configured_coordinates_path()
+    neighbours_path = configured_neighbours_path()
 
     with st.sidebar:
         st.markdown('<p class="brand-wordmark">timbrelio.</p>', unsafe_allow_html=True)
@@ -145,6 +211,7 @@ def main() -> None:
             coordinates,
             color_by=color_label.lower(),
             selected_track_id=selected_track_id,
+            highlighted_track_id=st.session_state.get(HIGHLIGHTED_NEIGHBOUR_KEY),
         ),
         use_container_width=True,
         theme=None,
@@ -160,6 +227,7 @@ def main() -> None:
     event_track_id = selected_track_id_from_event(selection_event)
     if event_track_id is not None and event_track_id != selected_track_id:
         st.session_state[SELECTED_TRACK_KEY] = event_track_id
+        st.session_state.pop(HIGHLIGHTED_NEIGHBOUR_KEY, None)
         st.rerun()
     st.caption(
         "Drag to pan, scroll to zoom, and use the Plotly home control to reset the map. "
@@ -182,6 +250,28 @@ def main() -> None:
         declared_status=details.audio_status,
     )
     render_track_details(details, audio_source)
+
+    try:
+        neighbours_modified_at = (
+            neighbours_path.stat().st_mtime_ns if neighbours_path.exists() else None
+        )
+        neighbours = load_neighbours(
+            str(neighbours_path),
+            neighbours_modified_at,
+        )
+    except (NeighbourDataError, FileNotFoundError, OSError) as error:
+        st.warning("Saved neighbours could not be loaded.", icon="⚠️")
+        st.caption(str(error))
+        return
+
+    render_neighbours(
+        neighbours_for_seed(
+            neighbours,
+            coordinates,
+            seed_track_id=details.track_id,
+            representation=details.representation,
+        )
+    )
 
 
 if __name__ == "__main__":

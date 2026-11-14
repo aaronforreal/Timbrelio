@@ -36,6 +36,7 @@ def build_coordinate_map(
     coordinates: pd.DataFrame,
     color_by: str | None = None,
     selected_track_id: str | None = None,
+    highlighted_track_id: str | None = None,
 ) -> go.Figure:
     """Build an interactive coordinate map with safe, track-aligned hover data."""
 
@@ -91,6 +92,31 @@ def build_coordinate_map(
                 for index, custom_data in enumerate(trace.customdata)
                 if str(custom_data[0]) == selected_track_id
             ]
+
+    if highlighted_track_id is not None:
+        highlighted = coordinates.loc[
+            coordinates["track_id"].astype(str).eq(highlighted_track_id)
+        ]
+        if not highlighted.empty:
+            point = highlighted.iloc[0]
+            figure.add_trace(
+                go.Scattergl(
+                    x=[point["x"]],
+                    y=[point["y"]],
+                    mode="markers",
+                    name="Located neighbour",
+                    text=[highlighted_track_id],
+                    customdata=[[""]],
+                    hovertemplate="Located neighbour · %{text}<extra></extra>",
+                    marker={
+                        "color": COLORS["porcelain"],
+                        "line": {"color": COLORS["deep_burgundy"], "width": 3},
+                        "size": 18,
+                        "symbol": "diamond-open",
+                    },
+                    showlegend=False,
+                )
+            )
 
     figure.update_layout(
         height=610,

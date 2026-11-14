@@ -169,3 +169,87 @@ def test_stale_selected_track_is_cleared_without_crashing(monkeypatch):
         == "The selected track is no longer available in this map."
     )
 
+
+def test_selected_track_shows_five_saved_neighbours(monkeypatch):
+    monkeypatch.delenv("TIMBRELIO_COORDINATES_PATH", raising=False)
+    monkeypatch.delenv("TIMBRELIO_NEIGHBOURS_PATH", raising=False)
+    app = AppTest.from_file("app.py", default_timeout=15)
+    app.session_state["selected_track_id"] = "TRK-0001"
+    app.run()
+
+    assert not app.exception
+    rank_captions = [
+        caption.value for caption in app.caption if caption.value.startswith("RANK ")
+    ]
+    assert rank_captions == [
+        "RANK 1 · TRK-0006",
+        "RANK 2 · TRK-0009",
+        "RANK 3 · TRK-0014",
+        "RANK 4 · TRK-0020",
+        "RANK 5 · TRK-0003",
+    ]
+    assert any(
+        "original standardized feature space" in caption.value
+        for caption in app.caption
+    )
+
+
+def test_missing_neighbour_artifact_is_recoverable(monkeypatch, tmp_path):
+    monkeypatch.delenv("TIMBRELIO_COORDINATES_PATH", raising=False)
+    monkeypatch.setenv(
+        "TIMBRELIO_NEIGHBOURS_PATH", str(tmp_path / "missing-neighbours.csv")
+    )
+    app = AppTest.from_file("app.py", default_timeout=15)
+    app.session_state["selected_track_id"] = "TRK-0001"
+    app.run()
+
+    assert not app.exception
+    assert any(
+        warning.value == "Saved neighbours could not be loaded."
+        for warning in app.warning
+    )
+    assert app.subheader[0].value == "Velvet Morning"
+
+
+def test_short_neighbour_list_keeps_partial_results(monkeypatch, tmp_path):
+    artifact = tmp_path / "neighbours.csv"
+    artifact.write_text(
+        "seed_track_id,representation,neighbour_track_id,rank,distance\n"
+        "TRK-0001,Conventional,TRK-0006,1,0.082\n"
+        "TRK-0001,Conventional,TRK-0009,2,0.117\n",
+        encoding="utf-8",
+    )
+    monkeypatch.delenv("TIMBRELIO_COORDINATES_PATH", raising=False)
+    monkeypatch.setenv("TIMBRELIO_NEIGHBOURS_PATH", str(artifact))
+    app = AppTest.from_file("app.py", default_timeout=15)
+    app.session_state["selected_track_id"] = "TRK-0001"
+    app.run()
+
+    assert not app.exception
+    assert any(
+        warning.value == "Only 2 of 5 saved neighbours are available."
+        for warning in app.warning
+    )
+    assert sum(caption.value.startswith("RANK ") for caption in app.caption) == 2
+
+
+def test_locating_neighbour_does_not_replace_selected_seed(monkeypatch):
+    monkeypatch.delenv("TIMBRELIO_COORDINATES_PATH", raising=False)
+    monkeypatch.delenv("TIMBRELIO_NEIGHBOURS_PATH", raising=False)
+    app = AppTest.from_file("app.py", default_timeout=15)
+    app.session_state["selected_track_id"] = "TRK-0001"
+    app.run()
+
+    locate_button = next(
+        button
+        for button in app.button
+        if button.key == "locate-neighbour-TRK-0006"
+    )
+    locate_button.click().run()
+
+    assert not app.exception
+    assert app.session_state["selected_track_id"] == "TRK-0001"
+    assert app.session_state["highlighted_neighbour_id"] == "TRK-0006"
+    figure = json.loads(app.get("plotly_chart")[0].proto.spec)
+    assert figure["data"][-1]["name"] == "Located neighbour"
+

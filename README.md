@@ -159,6 +159,14 @@ hover information, selected-track details, labelled colour modes, and local
 playback. Missing genre or cluster values appear as `Unassigned`; cluster `-1`
 appears as `Noise`.
 
+Nearest-neighbour results are loaded from a separate saved CSV; the browser
+does not calculate similarity from the two-dimensional map. Each row requires
+`seed_track_id`, `representation`, `neighbour_track_id`, and a whole-number
+`rank` from 1 through 5, plus exactly one numeric `distance` or `similarity`
+column. Results are ordered by their saved ranks. The selected seed and
+duplicate neighbour IDs are excluded, and a short result list remains visible
+with a partial-data warning.
+
 Audio paths are resolved beneath `TIMBRELIO_AUDIO_ROOT` and must not escape
 that directory. Store relative paths such as `000/000002.mp3` in the artifact;
 do not commit audio or machine-specific absolute paths. WAV, MP3, OGG, FLAC,
@@ -167,6 +175,7 @@ unavailable audio remains visible as a disabled playback state.
 
 ```powershell
 $env:TIMBRELIO_COORDINATES_PATH = "C:\path\to\coordinates.csv"
+$env:TIMBRELIO_NEIGHBOURS_PATH = "C:\path\to\neighbours.csv"
 $env:TIMBRELIO_AUDIO_ROOT = "C:\path\to\fma_small"
 streamlit run app.py
 ```
@@ -174,8 +183,10 @@ streamlit run app.py
 Run the focused test suite with `pytest`. Drag to pan, scroll to zoom, use the
 Plotly home control to reset the view, switch between deterministic genre and
 cluster colours, and select a point to inspect metadata or play available
-audio. The browser only reads saved coordinates and local audio; it does not
-compute projections or neighbours during interaction.
+audio. A selected track displays up to five saved original-space neighbours;
+"Locate on map" highlights a neighbour without replacing the seed selection.
+The browser only reads saved coordinates, neighbour results, and local audio;
+it does not compute projections or neighbours during interaction.
 
 ## 8. Timeline
 
