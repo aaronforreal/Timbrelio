@@ -1,0 +1,20 @@
+name: Analysis checks
+on:
+  push:
+    branches: ["meet/objective_1"]
+  pull_request:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -e '.[analysis,dev]'
+      - name: Check required analysis packages
+        run: python -c 'import umap, hdbscan, streamlit'
+      - name: Test analysis and browser
+        run: python -m pytest

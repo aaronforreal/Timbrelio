@@ -34,6 +34,7 @@ def load_features(path: Path):
     df = pd.read_csv(path, dtype={"track_id": "string"})
     if "track_id" not in df or df.track_id.isna().any() or (df.track_id.str.strip() == "").any():
         raise ValueError("CSV needs non-empty track_id values")
+    df["track_id"] = df["track_id"].str.strip()
     if df.track_id.duplicated().any():
         raise ValueError("track_id values must be unique")
     metadata = [c for c in ("track_id", "title", "genre") if c in df]

@@ -8,6 +8,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
 from timbrelio.evaluate import Config, cluster_metrics, load_features, neighbor_indices, neighbor_overlap
+from timbrelio.ui.data import read_coordinates
 
 
 class EvaluationTests(unittest.TestCase):
@@ -25,6 +26,14 @@ class EvaluationTests(unittest.TestCase):
             path.write_text('track_id,f1,f2\n1,1,NaN\n2,3,4\n')
             with self.assertRaisesRegex(ValueError, 'finite'):
                 load_features(path)
+
+    def test_map_loader_preserves_leading_zeroes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'map.csv'
+            path.write_text('track_id,x,y,cluster\n000001,1,2,-1\n000002,3,4,0\n')
+            result = read_coordinates(path)
+            self.assertEqual(result.track_id.tolist(), ['000001', '000002'])
+            self.assertEqual(result.cluster.tolist(), ['Noise', '0'])
 
     def test_neighbors_exclude_self_with_duplicates(self):
         data = np.array([[1., 0.], [1., 0.], [0., 1.], [-1., 0.]])
