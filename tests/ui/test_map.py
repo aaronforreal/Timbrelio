@@ -97,3 +97,19 @@ def test_selected_track_id_is_reapplied_to_the_correct_trace():
     }
     assert figure.layout.clickmode == "event+select"
 
+
+def test_located_neighbour_gets_a_noninteractive_marker_without_replacing_seed():
+    figure = build_coordinate_map(
+        coordinate_frame(),
+        color_by="genre",
+        selected_track_id="TRK-1",
+        highlighted_track_id="TRK-2",
+    )
+
+    located = figure.data[-1]
+    assert located.name == "Located neighbour"
+    assert list(located.x) == [0.5]
+    assert list(located.y) == [1.5]
+    assert located.marker.symbol == "diamond-open"
+    assert located.customdata[0][0] == ""
+
