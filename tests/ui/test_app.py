@@ -253,3 +253,47 @@ def test_locating_neighbour_does_not_replace_selected_seed(monkeypatch):
     figure = json.loads(app.get("plotly_chart")[0].proto.spec)
     assert figure["data"][-1]["name"] == "Located neighbour"
 
+
+def test_seed_and_neighbours_share_one_ordered_playback_region(monkeypatch, tmp_path):
+    audio_root = tmp_path / "audio"
+    audio_root.mkdir()
+    write_wav(audio_root / "seed.wav")
+    write_wav(audio_root / "second.wav")
+    coordinates = tmp_path / "coordinates.csv"
+    coordinates.write_text(
+        "track_id,x,y,title,artist,genre,cluster,representation,audio_path\n"
+        "SEED,0,0,Seed,Artist S,Jazz,0,Conventional,seed.wav\n"
+        "N-1,1,1,First,Artist 1,Rock,1,Conventional,missing.wav\n"
+        "N-2,2,2,Second,Artist 2,Pop,2,Conventional,second.wav\n",
+        encoding="utf-8",
+    )
+    neighbours = tmp_path / "neighbours.csv"
+    neighbours.write_text(
+        "seed_track_id,representation,neighbour_track_id,rank,distance\n"
+        "SEED,Conventional,N-1,1,0.1\n"
+        "SEED,Conventional,N-2,2,0.2\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("TIMBRELIO_COORDINATES_PATH", str(coordinates))
+    monkeypatch.setenv("TIMBRELIO_NEIGHBOURS_PATH", str(neighbours))
+    monkeypatch.setenv("TIMBRELIO_AUDIO_ROOT", str(audio_root))
+    app = AppTest.from_file("app.py", default_timeout=15)
+    app.session_state["selected_track_id"] = "SEED"
+
+    app.run()
+
+    assert not app.exception
+    assert any(block.value == "### Listen and compare" for block in app.markdown)
+    comparison_labels = [
+        caption.value
+        for caption in app.caption
+        if caption.value.startswith(("SEED ·", "RANK "))
+    ]
+    assert comparison_labels == ["SEED · SEED", "RANK 1 · N-1", "RANK 2 · N-2"]
+    assert len(app.get("audio")) == 2
+    unavailable = [
+        button for button in app.button if button.label == "Audio unavailable"
+    ]
+    assert len(unavailable) == 1
+    assert unavailable[0].key == "comparison-playback-rank-1-N-1-unavailable"
+

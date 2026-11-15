@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+import pandas as pd
 import streamlit as st
 
 from timbrelio.ui.data import CoordinateDataError, read_coordinates
@@ -16,11 +17,10 @@ from timbrelio.ui.neighbours import (
     neighbours_for_seed,
     read_neighbours,
 )
+from timbrelio.ui.playback import PlaybackRow, comparison_playback_rows
 from timbrelio.ui.theme import APP_CSS
 from timbrelio.ui.track import (
-    AudioSource,
     TrackDetails,
-    resolve_audio_source,
     selected_track_id_from_event,
     track_details_for_id,
 )
@@ -66,8 +66,8 @@ def configured_neighbours_path() -> Path:
     return Path(os.environ.get("TIMBRELIO_NEIGHBOURS_PATH", DEFAULT_NEIGHBOURS_PATH))
 
 
-def render_track_details(details: TrackDetails, audio_source: AudioSource) -> None:
-    """Render selected-track metadata and a recoverable playback state."""
+def render_track_details(details: TrackDetails) -> None:
+    """Render selected-track metadata above the comparison workflow."""
 
     with st.container(border=True):
         st.caption("SELECTED TRACK")
@@ -79,25 +79,50 @@ def render_track_details(details: TrackDetails, audio_source: AudioSource) -> No
         st.caption(
             f"Track ID: {details.track_id} · Representation: {details.representation}"
         )
-        if audio_source.available:
-            st.audio(audio_source.path, format=audio_source.mime_type)
-        else:
-            st.button(
-                "Audio unavailable",
-                disabled=True,
-                key=f"audio-unavailable-{details.track_id}",
-            )
-            st.caption(audio_source.message)
 
 
-def render_neighbours(results: list[NeighbourResult]) -> None:
-    """Render ranked saved results without replacing the selected seed track."""
+def render_audio_control(row: PlaybackRow) -> None:
+    """Render one available player or a rank-preserving disabled state."""
 
-    st.markdown("### Five nearest tracks")
-    st.caption(
-        "Saved results from the original standardized feature space — not distances "
-        "on the two-dimensional map."
+    if row.audio_source.available:
+        st.audio(row.audio_source.path, format=row.audio_source.mime_type)
+        return
+    st.button(
+        "Audio unavailable",
+        disabled=True,
+        key=f"{row.component_key}-unavailable",
     )
+    st.caption(row.audio_source.message)
+
+
+def render_comparison_playback(
+    seed: TrackDetails,
+    results: list[NeighbourResult],
+    coordinates: pd.DataFrame,
+) -> None:
+    """Render the seed and ranked neighbours in one listening workflow."""
+
+    st.markdown("### Listen and compare")
+    st.caption(
+        "Play the selected seed first, then compare neighbours saved from the "
+        "original standardized feature space in rank order."
+    )
+    rows = comparison_playback_rows(
+        seed,
+        results,
+        coordinates,
+        configured_audio_root(),
+    )
+
+    seed_row = rows[0]
+    with st.container(border=True):
+        st.caption(f"SEED · {seed_row.track_id}")
+        st.markdown(f"**{seed_row.title}**")
+        st.caption(
+            f"{seed_row.artist} · {seed_row.genre} · Cluster {seed_row.cluster}"
+        )
+        render_audio_control(seed_row)
+
     if not results:
         st.info("No saved neighbours are available for this track and representation.")
         return
@@ -107,16 +132,17 @@ def render_neighbours(results: list[NeighbourResult]) -> None:
             f"Only {len(results)} of {RESULT_LIMIT} saved neighbours are available."
         )
 
-    for result in results:
+    for result, row in zip(results, rows[1:], strict=True):
         with st.container(border=True):
             identity, action = st.columns([4, 1])
             with identity:
-                st.caption(f"RANK {result.rank} · {result.track_id}")
-                st.markdown(f"**{result.title}**")
+                st.caption(f"{row.label.upper()} · {row.track_id}")
+                st.markdown(f"**{row.title}**")
                 st.caption(
-                    f"{result.artist} · {result.genre} · Cluster {result.cluster} · "
+                    f"{row.artist} · {row.genre} · Cluster {row.cluster} · "
                     f"{result.metric_name.title()} {result.metric_value:.3f}"
                 )
+                render_audio_control(row)
             with action:
                 if st.button(
                     "Locate on map",
@@ -244,12 +270,7 @@ def main() -> None:
         st.warning("The selected track is no longer available in this map.")
         return
 
-    audio_source = resolve_audio_source(
-        details.audio_path,
-        configured_audio_root(),
-        declared_status=details.audio_status,
-    )
-    render_track_details(details, audio_source)
+    render_track_details(details)
 
     try:
         neighbours_modified_at = (
@@ -262,15 +283,18 @@ def main() -> None:
     except (NeighbourDataError, FileNotFoundError, OSError) as error:
         st.warning("Saved neighbours could not be loaded.", icon="⚠️")
         st.caption(str(error))
+        render_comparison_playback(details, [], coordinates)
         return
 
-    render_neighbours(
+    render_comparison_playback(
+        details,
         neighbours_for_seed(
             neighbours,
             coordinates,
             seed_track_id=details.track_id,
             representation=details.representation,
-        )
+        ),
+        coordinates,
     )
 
 
