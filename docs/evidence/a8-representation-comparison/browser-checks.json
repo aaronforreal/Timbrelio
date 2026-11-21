@@ -1,0 +1,57 @@
+{
+  "viewports": [
+    {
+      "width": 1440,
+      "scrollWidth": 1440,
+      "columns": [
+        {
+          "name": "Conventional",
+          "x": 81,
+          "y": 440.359375
+        },
+        {
+          "name": "OpenL3",
+          "x": 725.5,
+          "y": 440.359375
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "scrollWidth": 768,
+      "columns": [
+        {
+          "name": "Conventional",
+          "x": 16,
+          "y": 463.078125
+        },
+        {
+          "name": "OpenL3",
+          "x": 389,
+          "y": 463.078125
+        }
+      ]
+    },
+    {
+      "width": 375,
+      "scrollWidth": 375,
+      "columns": [
+        {
+          "name": "Conventional",
+          "x": 16,
+          "y": 587.453125
+        },
+        {
+          "name": "OpenL3",
+          "x": 16,
+          "y": 2625.578125
+        }
+      ]
+    }
+  ],
+  "keyboard": {
+    "label": "Locate on map",
+    "outline": "solid"
+  },
+  "seed_retained_after_locate": true
+}

@@ -16,6 +16,7 @@ data/audio/
 data/*.csv
 !data/sample_coordinates.csv
 !data/sample_neighbours.csv
+!data/sample_openl3_neighbours.csv
 
 # Editors and operating systems
 .vscode/
