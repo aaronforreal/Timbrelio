@@ -188,6 +188,43 @@ audio. A selected track displays up to five saved original-space neighbours;
 The browser only reads saved coordinates, neighbour results, and local audio;
 it does not compute projections or neighbours during interaction.
 
+### Compare conventional and OpenL3 neighbours (A8)
+
+Select a track, then choose **Compare Conventional / OpenL3** under **Neighbour
+view**. The default remains **Single representation**. Both lists use the same
+seed ID, retain saved ranks, and label shared neighbours and IDs appearing only
+in one displayed list. Each side has local playback and a Locate on map action
+that retains the seed. Columns stack on narrow screens.
+
+The bundled lists are synthetic examples for `TRK-0001` and `TRK-0002`; they do
+not establish retrieval quality. To use project results, configure a combined
+CSV containing both `Conventional` and `OpenL3` rows:
+
+```powershell
+$env:TIMBRELIO_NEIGHBOURS_PATH = "C:\path\to\neighbours.csv"
+```
+
+Alternatively, point `TIMBRELIO_NEIGHBOURS_PATH` at the conventional CSV and
+`TIMBRELIO_OPENL3_NEIGHBOURS_PATH` at a separate OpenL3 CSV. Each file uses the
+A6 schema: `seed_track_id`, `representation`, `neighbour_track_id`, `rank`, and
+exactly one of `distance` or `similarity`. Representation names match without
+case sensitivity. Each side is loaded independently, so one invalid/missing
+file does not hide the other list. Missing seed results and partial lists are
+reported explicitly; absent results never establish that a neighbour is unique.
+Distances/similarities are labelled as saved and displayed to three decimal
+places; values across representations need not share a comparable scale.
+
+Metadata and audio are joined by `track_id` from the active coordinate artifact;
+off-map neighbours remain listed with unavailable metadata/audio. Audio uses the
+existing `TIMBRELIO_AUDIO_ROOT` safety checks. Custom coordinates without a
+configured neighbour artifact do not use bundled synthetic results in comparison
+mode. The UI consumes saved results and performs no retrieval or projection fitting.
+
+This PR is stacked on A7 (`feature/a7-comparison-playback`). A3 filters and A5
+projection controls remain on their own branches; combined integration validation
+is deferred until those dependencies are integrated. This change neither merges
+those branches nor implements A9 performance work.
+
 ## 8. Timeline
 
 | Dates | Deliverable |
