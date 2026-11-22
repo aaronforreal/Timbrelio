@@ -120,13 +120,16 @@ APP_CSS = f"""
   margin-top: 0.75rem;
 }}
 
+
+
 [data-testid="stVerticalBlockBorderWrapper"] {{
   background: rgba(255, 249, 239, 0.66);
   border-color: rgba(45, 35, 33, 0.13) !important;
   border-radius: 1rem;
 }}
 
-[data-testid="stVerticalBlockBorderWrapper"] h3 {{
+[data-testid="stVerticalBlockBorderWrapper"] h3,
+[data-testid="stVerticalBlockBorderWrapper"] h4 {{
   color: var(--deep-burgundy);
   font-family: Georgia, 'Times New Roman', serif;
 }}

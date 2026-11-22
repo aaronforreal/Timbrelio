@@ -3,6 +3,7 @@ import pytest
 
 from timbrelio.ui.data import (
     CoordinateDataError,
+    DEFAULT_REPRESENTATION,
     NOISE_LABEL,
     UNASSIGNED_LABEL,
     UNAVAILABLE_TITLE,
@@ -34,6 +35,10 @@ def test_read_coordinates_accepts_valid_rows(tmp_path):
     result = read_coordinates(path)
 
     assert result["track_id"].tolist() == ["TRK-1", "TRK-2"]
+    assert result["representation"].tolist() == [
+        DEFAULT_REPRESENTATION,
+        DEFAULT_REPRESENTATION,
+    ]
     assert result["x"].dtype.kind == "f"
     assert result["y"].dtype.kind == "f"
     assert result["title"].tolist() == ["First Light", "Night Drive"]
@@ -54,6 +59,7 @@ def test_read_coordinates_accepts_header_only_artifact(tmp_path):
         "track_id",
         "x",
         "y",
+        "representation",
         "title",
         "genre",
         "cluster",
@@ -98,6 +104,27 @@ def test_read_coordinates_normalizes_numeric_clusters_with_missing_values(tmp_pa
     result = read_coordinates(path)
 
     assert result["cluster"].tolist() == ["0", NOISE_LABEL, UNASSIGNED_LABEL]
+
+
+def test_read_coordinates_allows_track_id_once_per_representation(tmp_path):
+    path = write_coordinates(
+        tmp_path,
+        pd.DataFrame(
+            {
+                "track_id": ["TRK-1", "TRK-1"],
+                "representation": ["Conventional", "OpenL3"],
+                "x": [0, 1],
+                "y": [1, 0],
+            }
+        ),
+    )
+
+    result = read_coordinates(path)
+
+    assert result[["track_id", "representation"]].to_records(index=False).tolist() == [
+        ("TRK-1", "Conventional"),
+        ("TRK-1", "OpenL3"),
+    ]
 
 
 @pytest.mark.parametrize(
