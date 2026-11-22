@@ -19,6 +19,9 @@ dependencies = [
 dev = [
   "pytest==8.3.0",
 ]
+benchmark = [
+  "websocket-client==1.9.0",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
