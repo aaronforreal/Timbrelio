@@ -99,6 +99,15 @@ def read_neighbours(path: Path) -> pd.DataFrame:
     return neighbours
 
 
+def index_neighbours(neighbours: pd.DataFrame) -> pd.DataFrame:
+    """Prepare case-insensitive seed lookup once when an artifact is loaded."""
+
+    return neighbours.set_index([
+        neighbours["seed_track_id"],
+        neighbours["representation"].str.casefold().rename("representation_key"),
+    ]).sort_index(kind="stable")
+
+
 def neighbours_for_seed(
     neighbours: pd.DataFrame,
     coordinates: pd.DataFrame,
@@ -108,13 +117,19 @@ def neighbours_for_seed(
 ) -> list[NeighbourResult]:
     """Return up to five saved results, excluding the seed and duplicate IDs."""
 
-    matches = neighbours.loc[
-        neighbours["seed_track_id"].astype(str).eq(seed_track_id)
-        & neighbours["representation"]
-        .astype(str)
-        .str.casefold()
-        .eq(representation.casefold())
-    ].sort_values("rank", kind="stable")
+    if neighbours.index.names == ["seed_track_id", "representation_key"]:
+        try:
+            matches = neighbours.xs(
+                (seed_track_id, representation.casefold()), level=[0, 1]
+            )
+        except KeyError:
+            return []
+    else:
+        matches = neighbours.loc[
+            neighbours["seed_track_id"].astype(str).eq(seed_track_id)
+            & neighbours["representation"].astype(str).str.casefold().eq(representation.casefold())
+        ]
+    matches = matches.sort_values("rank", kind="stable")
 
     metric_name = next(column for column in METRIC_COLUMNS if column in neighbours)
     coordinates_by_id = coordinates.assign(
