@@ -1,0 +1,11 @@
+seed_track_id,representation,neighbour_track_id,rank,distance
+TRK-0001,Conventional,TRK-0006,1,0.082
+TRK-0001,Conventional,TRK-0009,2,0.117
+TRK-0001,Conventional,TRK-0014,3,0.164
+TRK-0001,Conventional,TRK-0020,4,0.208
+TRK-0001,Conventional,TRK-0003,5,0.271
+TRK-0002,Conventional,TRK-0007,1,0.074
+TRK-0002,Conventional,TRK-0012,2,0.103
+TRK-0002,Conventional,TRK-0016,3,0.149
+TRK-0002,Conventional,TRK-0004,4,0.236
+TRK-0002,Conventional,TRK-0013,5,0.289

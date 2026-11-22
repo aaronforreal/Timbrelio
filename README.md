@@ -153,20 +153,77 @@ streamlit run app.py
 ```
 
 To load a real saved projection, point the app to a CSV containing unique
-`track_id`, `x`, and `y` columns. Optional `title`, `genre`, and `cluster`
-columns enable detailed hover information and labelled colour modes. Missing
-genre or cluster values appear as `Unassigned`; cluster `-1` appears as
-`Noise`.
+`track_id`, `x`, and `y` columns. Optional `title`, `artist`, `genre`,
+`cluster`, `representation`, `audio_path`, and `audio_status` columns enable
+hover information, selected-track details, labelled colour modes, and local
+playback. Missing genre or cluster values appear as `Unassigned`; cluster `-1`
+appears as `Noise`.
+
+Nearest-neighbour results are loaded from a separate saved CSV; the browser
+does not calculate similarity from the two-dimensional map. Each row requires
+`seed_track_id`, `representation`, `neighbour_track_id`, and a whole-number
+`rank` from 1 through 5, plus exactly one numeric `distance` or `similarity`
+column. Results are ordered by their saved ranks. The selected seed and
+duplicate neighbour IDs are excluded, and a short result list remains visible
+with a partial-data warning.
+
+Audio paths are resolved beneath `TIMBRELIO_AUDIO_ROOT` and must not escape
+that directory. Store relative paths such as `000/000002.mp3` in the artifact;
+do not commit audio or machine-specific absolute paths. WAV, MP3, OGG, FLAC,
+and M4A files are supported. Missing, unreadable, corrupt, or explicitly
+unavailable audio remains visible as a disabled playback state.
 
 ```powershell
 $env:TIMBRELIO_COORDINATES_PATH = "C:\path\to\coordinates.csv"
+$env:TIMBRELIO_NEIGHBOURS_PATH = "C:\path\to\neighbours.csv"
+$env:TIMBRELIO_AUDIO_ROOT = "C:\path\to\fma_small"
 streamlit run app.py
 ```
 
 Run the focused test suite with `pytest`. Drag to pan, scroll to zoom, use the
-Plotly home control to reset the view, and switch between deterministic genre
-and cluster colours above the map. The browser only reads saved coordinates;
+Plotly home control to reset the view, switch between deterministic genre and
+cluster colours, and select a point to inspect metadata or play available
+audio. A selected track displays up to five saved original-space neighbours;
+"Locate on map" highlights a neighbour without replacing the seed selection.
+The browser only reads saved coordinates, neighbour results, and local audio;
 it does not compute projections or neighbours during interaction.
+
+### Compare conventional and OpenL3 neighbours (A8)
+
+Select a track, then choose **Compare Conventional / OpenL3** under **Neighbour
+view**. The default remains **Single representation**. Both lists use the same
+seed ID, retain saved ranks, and label shared neighbours and IDs appearing only
+in one displayed list. Each side has local playback and a Locate on map action
+that retains the seed. Columns stack on narrow screens.
+
+The bundled lists are synthetic examples for `TRK-0001` and `TRK-0002`; they do
+not establish retrieval quality. To use project results, configure a combined
+CSV containing both `Conventional` and `OpenL3` rows:
+
+```powershell
+$env:TIMBRELIO_NEIGHBOURS_PATH = "C:\path\to\neighbours.csv"
+```
+
+Alternatively, point `TIMBRELIO_NEIGHBOURS_PATH` at the conventional CSV and
+`TIMBRELIO_OPENL3_NEIGHBOURS_PATH` at a separate OpenL3 CSV. Each file uses the
+A6 schema: `seed_track_id`, `representation`, `neighbour_track_id`, `rank`, and
+exactly one of `distance` or `similarity`. Representation names match without
+case sensitivity. Each side is loaded independently, so one invalid/missing
+file does not hide the other list. Missing seed results and partial lists are
+reported explicitly; absent results never establish that a neighbour is unique.
+Distances/similarities are labelled as saved and displayed to three decimal
+places; values across representations need not share a comparable scale.
+
+Metadata and audio are joined by `track_id` from the active coordinate artifact;
+off-map neighbours remain listed with unavailable metadata/audio. Audio uses the
+existing `TIMBRELIO_AUDIO_ROOT` safety checks. Custom coordinates without a
+configured neighbour artifact do not use bundled synthetic results in comparison
+mode. The UI consumes saved results and performs no retrieval or projection fitting.
+
+This PR is stacked on A7 (`feature/a7-comparison-playback`). A3 filters and A5
+projection controls remain on their own branches; combined integration validation
+is deferred until those dependencies are integrated. This change neither merges
+those branches nor implements A9 performance work.
 
 ## 8. Timeline
 
