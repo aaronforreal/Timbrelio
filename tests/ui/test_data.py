@@ -44,6 +44,8 @@ def test_read_coordinates_accepts_valid_rows(tmp_path):
     assert result["title"].tolist() == ["First Light", "Night Drive"]
     assert result["genre"].tolist() == ["Jazz", "Rock"]
     assert result["cluster"].tolist() == ["2", NOISE_LABEL]
+    assert result["representation"].tolist() == ["Conventional", "Conventional"]
+    assert result["projection"].tolist() == ["Unspecified", "Unspecified"]
 
 
 def test_read_coordinates_accepts_header_only_artifact(tmp_path):
@@ -60,6 +62,7 @@ def test_read_coordinates_accepts_header_only_artifact(tmp_path):
         "x",
         "y",
         "representation",
+        "projection",
         "title",
         "genre",
         "cluster",
@@ -106,25 +109,24 @@ def test_read_coordinates_normalizes_numeric_clusters_with_missing_values(tmp_pa
     assert result["cluster"].tolist() == ["0", NOISE_LABEL, UNASSIGNED_LABEL]
 
 
-def test_read_coordinates_allows_track_id_once_per_representation(tmp_path):
+def test_read_coordinates_allows_track_in_multiple_projections(tmp_path):
     path = write_coordinates(
         tmp_path,
         pd.DataFrame(
             {
                 "track_id": ["TRK-1", "TRK-1"],
-                "representation": ["Conventional", "OpenL3"],
-                "x": [0, 1],
-                "y": [1, 0],
+                "representation": ["Conventional", "Conventional"],
+                "projection": [" pca ", "umap"],
+                "x": [1, 10],
+                "y": [2, 20],
             }
         ),
     )
 
     result = read_coordinates(path)
 
-    assert result[["track_id", "representation"]].to_records(index=False).tolist() == [
-        ("TRK-1", "Conventional"),
-        ("TRK-1", "OpenL3"),
-    ]
+    assert result["projection"].tolist() == ["PCA", "UMAP"]
+    assert result["track_id"].tolist() == ["TRK-1", "TRK-1"]
 
 
 @pytest.mark.parametrize(

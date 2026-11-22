@@ -113,3 +113,18 @@ def test_located_neighbour_gets_a_noninteractive_marker_without_replacing_seed()
     assert located.marker.symbol == "diamond-open"
     assert located.customdata[0][0] == ""
 
+
+def test_map_viewport_revision_changes_only_with_coordinate_source():
+    pca = build_coordinate_map(
+        coordinate_frame(), color_by="genre", viewport_key="Conventional-PCA"
+    )
+    recolored_pca = build_coordinate_map(
+        coordinate_frame(), color_by="cluster", viewport_key="Conventional-PCA"
+    )
+    umap = build_coordinate_map(
+        coordinate_frame(), color_by="genre", viewport_key="Conventional-UMAP"
+    )
+
+    assert pca.layout.uirevision == recolored_pca.layout.uirevision
+    assert pca.layout.uirevision != umap.layout.uirevision
+

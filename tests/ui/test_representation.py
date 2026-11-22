@@ -6,6 +6,7 @@ from pathlib import Path
 
 def test_overlap_preserves_saved_rank_order_and_inputs():
     coordinates = read_coordinates(Path("data/sample_coordinates.csv"))
+    coordinates = coordinates.loc[coordinates["projection"].eq("UMAP")]
     left = neighbours_for_seed(
         read_neighbours(Path("data/sample_neighbours.csv")), coordinates,
         seed_track_id="TRK-0001", representation="Conventional",

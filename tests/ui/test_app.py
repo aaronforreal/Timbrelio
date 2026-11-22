@@ -37,6 +37,18 @@ def test_app_switches_map_colour_mode(monkeypatch):
     assert len(app.get("plotly_chart")) == 1
 
 
+def test_app_switches_between_saved_projections(monkeypatch):
+    monkeypatch.delenv("TIMBRELIO_COORDINATES_PATH", raising=False)
+    app = AppTest.from_file("app.py", default_timeout=15).run()
+
+    app.radio(key="map_projection").set_value("PCA").run()
+
+    assert not app.exception
+    assert app.radio(key="map_projection").value == "PCA"
+    assert app.session_state["map_projection"] == "PCA"
+    assert len(app.get("plotly_chart")) == 1
+
+
 def test_app_reports_invalid_artifact(monkeypatch, tmp_path):
     invalid_artifact = tmp_path / "invalid.csv"
     invalid_artifact.write_text("track_id,x\nTRK-1,1\n", encoding="utf-8")
@@ -167,10 +179,7 @@ def test_stale_selected_track_is_cleared_without_crashing(monkeypatch):
 
     assert not app.exception
     assert app.session_state["selected_track_id"] is None
-    assert (
-        app.info[-2].value
-        == "The selected track was cleared because it is outside the active filters."
-    )
+    assert any("selected track was cleared" in item.value for item in app.info)
 
 
 def test_selected_track_shows_five_saved_neighbours(monkeypatch):
@@ -357,4 +366,18 @@ def test_app_switches_saved_representations(monkeypatch, tmp_path):
 
     assert not app.exception
     assert app.selectbox[0].value == "Conventional"
+
+
+def test_app_reports_artifact_without_supported_projection(monkeypatch, tmp_path):
+    artifact = tmp_path / "coordinates.csv"
+    artifact.write_text(
+        "track_id,projection,x,y\nTRK-1,t-SNE,1,2\n", encoding="utf-8"
+    )
+    monkeypatch.setenv("TIMBRELIO_COORDINATES_PATH", str(artifact))
+
+    app = AppTest.from_file("app.py", default_timeout=15).run()
+
+    assert not app.exception
+    assert "no supported PCA or UMAP" in app.warning[0].value
+    assert len(app.get("plotly_chart")) == 0
 

@@ -37,6 +37,10 @@ def build_coordinate_map(
     color_by: str | None = None,
     selected_track_id: str | None = None,
     highlighted_track_id: str | None = None,
+
+
+    *,
+    viewport_key: str | None = None,
 ) -> go.Figure:
     """Build an interactive coordinate map with safe, track-aligned hover data."""
 
@@ -141,7 +145,7 @@ def build_coordinate_map(
             "bordercolor": "rgba(45, 35, 33, 0.16)",
             "borderwidth": 1,
         },
-        uirevision=f"coordinate-map-{color_by or 'neutral'}",
+        uirevision=f"coordinate-map-{viewport_key or 'default'}",
     )
     figure.update_xaxes(
         title=None,

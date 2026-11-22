@@ -12,6 +12,11 @@ UNAVAILABLE_TITLE = "Unavailable"
 UNASSIGNED_LABEL = "Unassigned"
 NOISE_LABEL = "Noise"
 DEFAULT_REPRESENTATION = "Conventional"
+UNSPECIFIED_PROJECTION = "Unspecified"
+PROJECTION_LABELS = {
+    "pca": "PCA",
+    "umap": "UMAP",
+}
 
 
 class CoordinateDataError(ValueError):
@@ -55,16 +60,17 @@ def read_coordinates(path: Path) -> pd.DataFrame:
     coordinates["representation"] = _normalized_text_column(
         coordinates, "representation", fallback=DEFAULT_REPRESENTATION
     )
+    coordinates["projection"] = _normalized_projection_column(coordinates)
 
     duplicate_rows = coordinates.duplicated(
-        subset=["representation", "track_id"], keep=False
+        subset=["representation", "projection", "track_id"], keep=False
     )
     if duplicate_rows.any():
         duplicate_ids = coordinates.loc[duplicate_rows, "track_id"].unique()
         preview = ", ".join(str(track_id) for track_id in duplicate_ids[:3])
         raise CoordinateDataError(
-            "track_id values must be unique within each representation. "
-            f"Duplicates: {preview}"
+            "track_id values must be unique within each representation and "
+            f"projection. Duplicates: {preview}"
         )
 
     for axis in ("x", "y"):
@@ -112,4 +118,14 @@ def _normalized_cluster_column(coordinates: pd.DataFrame) -> pd.Series:
     )
     values = values.mask(is_integer, integer_values)
     return values.mask(numeric_values.eq(-1).fillna(False), NOISE_LABEL)
+
+
+def _normalized_projection_column(coordinates: pd.DataFrame) -> pd.Series:
+    """Normalize known projection names and expose missing configuration."""
+
+    values = _normalized_text_column(
+        coordinates, "projection", fallback=UNSPECIFIED_PROJECTION
+    )
+    normalized = values.str.casefold().map(PROJECTION_LABELS)
+    return normalized.fillna(values).astype("string")
 

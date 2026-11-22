@@ -25,6 +25,11 @@ from timbrelio.ui.neighbours import (
 )
 from timbrelio.ui.playback import PlaybackRow, comparison_playback_rows
 from timbrelio.ui.representation import compare_neighbours
+from timbrelio.ui.projection import (
+    available_projections,
+    coordinates_for_projection,
+    default_projection,
+)
 from timbrelio.ui.theme import APP_CSS
 from timbrelio.ui.track import (
     TrackDetails,
@@ -43,6 +48,7 @@ HIGHLIGHTED_NEIGHBOUR_KEY = "highlighted_neighbour_id"
 REPRESENTATION_FILTER_KEY = "map_representation"
 GENRE_FILTER_KEY = "map_genres"
 CLUSTER_FILTER_KEY = "map_clusters"
+PROJECTION_KEY = "map_projection"
 
 
 @st.cache_data(show_spinner=False)
@@ -350,6 +356,14 @@ def main() -> None:
         )
         return
 
+    color_label = st.radio(
+        "Colour points by",
+        options=("Genre", "Cluster"),
+        horizontal=True,
+        help="The legend and point colours update without changing track coordinates.",
+    )
+
+
     representations = sorted_options(coordinates["representation"])
     genres = sorted_options(coordinates["genre"])
     clusters = sorted_options(coordinates["cluster"])
@@ -403,14 +417,46 @@ def main() -> None:
         )
 
     active_representation = st.session_state[REPRESENTATION_FILTER_KEY]
+    projections = available_projections(coordinates, representation=active_representation)
+    if not projections and coordinates["projection"].eq("Unspecified").all():
+        projections = ["Unspecified"]
+    if not projections:
+        st.warning(
+            "This artifact has no supported PCA or UMAP coordinates. Add a "
+            "`projection` column with saved `PCA` or `UMAP` rows.",
+            icon="⚠️",
+        )
+        return
+
+    if st.session_state.get(PROJECTION_KEY) not in projections:
+        st.session_state[PROJECTION_KEY] = default_projection(projections)
+
+    active_projection = st.radio(
+        "Projection",
+        options=projections,
+        key=PROJECTION_KEY,
+        horizontal=True,
+        disabled=len(projections) == 1,
+        help="Switch between saved coordinates; Timbrelio never fits PCA or UMAP here.",
+    )
+    if len(projections) == 1:
+        st.caption(
+            f"Only {active_projection} coordinates are available for "
+            f"{active_representation}."
+        )
+
+    projected_coordinates = (coordinates.loc[coordinates["representation"].eq(active_representation)].copy()
+        if active_projection == "Unspecified" else coordinates_for_projection(
+            coordinates, representation=active_representation, projection=active_projection))
+
     filtered_coordinates = filter_coordinates(
-        coordinates,
+        projected_coordinates,
         representation=active_representation,
         genres=st.session_state[GENRE_FILTER_KEY],
         clusters=st.session_state[CLUSTER_FILTER_KEY],
     )
     representation_total = int(
-        coordinates["representation"].eq(active_representation).sum()
+        len(projected_coordinates)
     )
 
     selected_track_id, selection_cleared = reconcile_selected_track(
@@ -421,12 +467,6 @@ def main() -> None:
     if selection_cleared:
         st.info("The selected track was cleared because it is outside the active filters.")
 
-    color_label = st.radio(
-        "Colour points by",
-        options=("Genre", "Cluster"),
-        horizontal=True,
-        help="The legend and point colours update without changing track coordinates.",
-    )
 
     st.markdown(
         f'<div class="map-meta"><span>{active_representation.upper()} · '
@@ -450,6 +490,7 @@ def main() -> None:
             color_by=color_label.lower(),
             selected_track_id=selected_track_id,
             highlighted_track_id=st.session_state.get(HIGHLIGHTED_NEIGHBOUR_KEY),
+            viewport_key=f"{active_representation}-{active_projection}",
         ),
         use_container_width=True,
         theme=None,
@@ -515,6 +556,10 @@ def main() -> None:
             representation=details.representation,
         ),
         filtered_coordinates,
+    )
+    st.caption(
+        "Projection changes only the saved map coordinates. Neighbours are retrieved "
+        "from the original feature space, not from 2-D map distance."
     )
 
 

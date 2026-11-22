@@ -173,6 +173,15 @@ do not commit audio or machine-specific absolute paths. WAV, MP3, OGG, FLAC,
 and M4A files are supported. Missing, unreadable, corrupt, or explicitly
 unavailable audio remains visible as a disabled playback state.
 
+To load real saved projections, point the app to a CSV containing `track_id`,
+`projection`, `x`, and `y` columns. Use `PCA` or `UMAP` in the projection
+column and include one row per track for each available map. Track IDs must be
+unique within each representation and projection. The optional
+`representation`, `title`, `genre`, and `cluster` columns enable configuration
+alignment, detailed hover information, and labelled colour modes. Missing
+representation values default to `Conventional`; missing genre or cluster
+values appear as `Unassigned`; cluster `-1` appears as `Noise`.
+
 ```powershell
 $env:TIMBRELIO_COORDINATES_PATH = "C:\path\to\coordinates.csv"
 $env:TIMBRELIO_NEIGHBOURS_PATH = "C:\path\to\neighbours.csv"
