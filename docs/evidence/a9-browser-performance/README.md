@@ -39,8 +39,10 @@ that baseline before A9 changes. It passes 76 tests. No remote merge occurred.
 `feature/a9-browser-performance` contains only A9 changes after this baseline.
 Review A9 with `git diff integration/a9-baseline...feature/a9-browser-performance`.
 A9 cannot target an isolated diff against current remote `main` until those
-dependency PRs are integrated. Rebase/reconcile and rerun verification against
-the final integrated main before publication. No PR has been opened for A9.
+dependency PRs are integrated. The A9 PR targets `integration/a9-baseline` to
+keep its review limited to A9. Rebase/reconcile, retarget to `main`, and rerun
+verification against the final integrated main after dependency PRs merge.
+Do not merge this PR into the temporary integration branch.
 
 The baseline merge keeps stable selection and playback while adding A3's
 filters and A5's saved projections. Legacy single-map artifacts without a

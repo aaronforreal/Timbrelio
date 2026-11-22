@@ -21,7 +21,7 @@ and `python scripts/check_browser_cdp.py --repeats 7` against the fixture server
 Physical point selection, wheel zoom/reset, keyboard projection switching,
 and responsive layouts at 375, 768, and 1440 px passed.
 
-See [measurement evidence](README.md) for raw observations, environment,
+See [measurement evidence](https://github.com/aaronforreal/Timbrelio/blob/feature/a9-browser-performance/docs/evidence/a9-browser-performance/README.md) for raw observations, environment,
 commands, screenshots, and limitations. Synthetic data contains no audio;
 full FMA/audio performance is unmeasured. No feature/projection/retrieval
 computation or visual redesign is included.
@@ -32,7 +32,10 @@ Dependencies: [A3](https://github.com/aaronforreal/Timbrelio/pull/3),
 [A6](https://github.com/aaronforreal/Timbrelio/pull/6),
 [A7](https://github.com/aaronforreal/Timbrelio/pull/7), and
 [A8](https://github.com/aaronforreal/Timbrelio/pull/9).
-Prepared on local `integration/a9-baseline` (`cfc6549`); reconcile with merged
-dependencies and rerun verification before opening against `main`.
+This PR targets `integration/a9-baseline` (`cfc6549`), which combines the
+existing dependency histories and their conflict resolutions. The diff above
+that baseline contains only A9. After dependency PRs merge, reconcile the
+branch with integrated `main`, retarget the PR, and rerun verification.
+Do not merge this PR into the temporary integration branch.
 
-Publication status: local draft only, awaiting user approval to raise a PR.
+PR publication is approved. Merging requires separate user approval.
