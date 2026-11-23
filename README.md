@@ -197,6 +197,17 @@ audio. A selected track displays up to five saved original-space neighbours;
 The browser only reads saved coordinates, neighbour results, and local audio;
 it does not compute projections or neighbours during interaction.
 
+### Browser performance (A9)
+
+The reproducible 8,000-track benchmark, before/after timings, cache behavior,
+and responsive browser evidence are documented in
+[`docs/evidence/a9-browser-performance/README.md`](docs/evidence/a9-browser-performance/README.md).
+Run performance measurements separately from correctness tests:
+
+```powershell
+python scripts/benchmark_browser.py --repeats 7 --output artifacts/a9-benchmark.json
+```
+
 ### Compare conventional and OpenL3 neighbours (A8)
 
 Select a track, then choose **Compare Conventional / OpenL3** under **Neighbour

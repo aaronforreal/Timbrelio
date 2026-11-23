@@ -5,8 +5,8 @@ from __future__ import annotations
 import hashlib
 from collections.abc import Iterable
 
+import numpy as np
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 
 from timbrelio.ui.data import NOISE_LABEL, UNASSIGNED_LABEL
@@ -37,8 +37,6 @@ def build_coordinate_map(
     color_by: str | None = None,
     selected_track_id: str | None = None,
     highlighted_track_id: str | None = None,
-
-
     *,
     viewport_key: str | None = None,
 ) -> go.Figure:
@@ -48,23 +46,30 @@ def build_coordinate_map(
         supported = ", ".join(SUPPORTED_COLOR_FIELDS)
         raise ValueError(f"color_by must be one of: {supported}")
 
-    scatter_options: dict[str, object] = {}
+    # Group rows once; construct WebGL traces directly instead of rebuilding
+    # Plotly Express's generic dataframe/encoding pipeline on every rerun.
     if color_by is not None:
         labels = coordinates[color_by].astype(str)
-        scatter_options.update(
-            color=color_by,
-            color_discrete_map=category_color_map(labels),
-            category_orders={color_by: sorted(labels.unique())},
-        )
+        colors = category_color_map(labels.unique())
+        groups = coordinates.groupby(labels, sort=True).indices.items()
+    else:
+        colors = {"": COLORS["mocha_cream"]}
+        groups = [("", np.arange(len(coordinates)))]
 
-    figure = px.scatter(
-        coordinates,
-        x="x",
-        y="y",
-        custom_data=["track_id", "title", "genre", "cluster"],
-        render_mode="webgl",
-        **scatter_options,
-    )
+    x = coordinates["x"].to_numpy()
+    y = coordinates["y"].to_numpy()
+    hover = coordinates[["track_id", "title", "genre", "cluster"]].to_numpy()
+    ids = coordinates["track_id"].to_numpy(dtype=str)
+    traces = []
+    for label, positions in groups:
+        traces.append(go.Scattergl(
+            x=x[positions], y=y[positions], mode="markers", name=str(label),
+            customdata=hover[positions], marker={"color": colors[str(label)]},
+            selectedpoints=(np.flatnonzero(ids[positions] == selected_track_id).tolist()
+                            if selected_track_id is not None else None),
+            showlegend=color_by is not None,
+        ))
+    figure = go.Figure(data=traces)
     figure.update_traces(
         marker={
             "size": 9,
@@ -86,17 +91,6 @@ def build_coordinate_map(
         },
         unselected={"marker": {"opacity": 0.35}},
     )
-    if color_by is None:
-        figure.update_traces(marker={"color": COLORS["mocha_cream"]})
-
-    if selected_track_id is not None:
-        for trace in figure.data:
-            trace.selectedpoints = [
-                index
-                for index, custom_data in enumerate(trace.customdata)
-                if str(custom_data[0]) == selected_track_id
-            ]
-
     if highlighted_track_id is not None:
         highlighted = coordinates.loc[
             coordinates["track_id"].astype(str).eq(highlighted_track_id)

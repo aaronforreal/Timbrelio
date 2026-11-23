@@ -8,7 +8,8 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from timbrelio.ui.data import CoordinateDataError, read_coordinates
+from timbrelio.ui.artifacts import load_coordinates, load_neighbours
+from timbrelio.ui.data import CoordinateDataError
 from timbrelio.ui.filters import (
     default_representation,
     filter_coordinates,
@@ -21,7 +22,6 @@ from timbrelio.ui.neighbours import (
     NeighbourDataError,
     NeighbourResult,
     neighbours_for_seed,
-    read_neighbours,
 )
 from timbrelio.ui.playback import PlaybackRow, comparison_playback_rows
 from timbrelio.ui.representation import compare_neighbours
@@ -49,22 +49,6 @@ REPRESENTATION_FILTER_KEY = "map_representation"
 GENRE_FILTER_KEY = "map_genres"
 CLUSTER_FILTER_KEY = "map_clusters"
 PROJECTION_KEY = "map_projection"
-
-
-@st.cache_data(show_spinner=False)
-def load_coordinates(path: str, modified_at: int | None):
-    """Load an immutable coordinate artifact once per path and file change."""
-
-    del modified_at
-    return read_coordinates(Path(path))
-
-
-@st.cache_data(show_spinner=False)
-def load_neighbours(path: str, modified_at: int | None):
-    """Load immutable, precomputed neighbour results once per file change."""
-
-    del modified_at
-    return read_neighbours(Path(path))
 
 
 def configured_coordinates_path() -> Path:
@@ -221,7 +205,7 @@ def render_representation_comparison(
         try:
             if path is None:
                 raise NeighbourDataError("No neighbour artifact configured.")
-            saved = load_neighbours(str(path), path.stat().st_mtime_ns)
+            saved = load_neighbours(path)
             results[representation] = neighbours_for_seed(
                 saved, coordinates,
                 seed_track_id=seed.track_id, representation=representation,
@@ -335,10 +319,7 @@ def main() -> None:
     )
 
     try:
-        modified_at = (
-            coordinates_path.stat().st_mtime_ns if coordinates_path.exists() else None
-        )
-        coordinates = load_coordinates(str(coordinates_path), modified_at)
+        coordinates = load_coordinates(coordinates_path)
     except (CoordinateDataError, FileNotFoundError, OSError) as error:
         st.error("The coordinate map could not be loaded.", icon="⚠️")
         st.markdown(
@@ -504,7 +485,11 @@ def main() -> None:
         },
     )
     event_track_id = selected_track_id_from_event(selection_event)
-    if event_track_id is not None and event_track_id != selected_track_id:
+    if (
+        event_track_id is not None
+        and event_track_id != selected_track_id
+        and filtered_coordinates["track_id"].eq(event_track_id).any()
+    ):
         st.session_state[SELECTED_TRACK_KEY] = event_track_id
         st.session_state.pop(HIGHLIGHTED_NEIGHBOUR_KEY, None)
         st.rerun()
@@ -534,13 +519,7 @@ def main() -> None:
         return
 
     try:
-        neighbours_modified_at = (
-            neighbours_path.stat().st_mtime_ns if neighbours_path.exists() else None
-        )
-        neighbours = load_neighbours(
-            str(neighbours_path),
-            neighbours_modified_at,
-        )
+        neighbours = load_neighbours(neighbours_path)
     except (NeighbourDataError, FileNotFoundError, OSError) as error:
         st.warning("Saved neighbours could not be loaded.", icon="⚠️")
         st.caption(str(error))

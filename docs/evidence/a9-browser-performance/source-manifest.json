@@ -1,0 +1,11 @@
+{
+  "baseline": "cfc6549",
+  "sha256": {
+    "app.py": "352ced0ac9e9c80b76abe36ed677475667bcb5e3d21c24fb799b032998af6a6f",
+    "src/timbrelio/ui/artifacts.py": "18007355e4219c7d1cd14c710b5672eb9e662e5bd8b7204ebb9aa5bc45b42775",
+    "src/timbrelio/ui/map.py": "5de26da14d80ff015ab6608b6dce193365d90202c7fb1292001013998403ab70",
+    "src/timbrelio/ui/neighbours.py": "7b3220462e6a47bf80866b7f3a80b57f524bd65d1b621d82118c27e944c24405",
+    "scripts/benchmark_browser.py": "33c9c7c327778ddfe2f8c3caaa7534d698aa32a84e9946064357a9e10f30c94a",
+    "scripts/check_browser_cdp.py": "e37e53c066c13a1439d8d9dccbb7bdd5ee24db1c043034e75338695bb6832030"
+  }
+}

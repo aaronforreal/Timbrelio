@@ -1,0 +1,59 @@
+{
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/157.0.8103.79",
+    "revision": "@6dc9bc3bdaea5c35ed6d41fceab2f7a3a2227c4f",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+    "jsVersion": "15.7.112.43"
+  },
+  "rendering": "headless Chrome, SwiftShader software WebGL",
+  "selection_seconds": [
+    0.6643444000073941,
+    0.5652292000013404,
+    0.5995910000056028,
+    0.620236400005524,
+    0.551519400003599,
+    0.6083459000074072,
+    0.5702574999886565
+  ],
+  "selection_method": "Plotly selection event from actual trace data to rendered details and selected marker plus two animation frames",
+  "filter_seconds": [
+    0.3974026999931084,
+    0.37241130000620615,
+    0.38437500000873115,
+    0.34236629999941215,
+    0.35375850000127684,
+    0.36366040000575595,
+    0.42148590000579134
+  ],
+  "filter_reset_seconds": [
+    0.42876300000352785,
+    0.3504219999886118,
+    0.4084329000033904,
+    0.41491960000712425,
+    0.3942656999861356,
+    0.37917829999059904,
+    0.3419503000041004
+  ],
+  "filter_method": "Genre 7 remove control (8,000 to 7,000 points); Reset filters restores 8,000; graph update plus two animation frames",
+  "physical_point_click": "SYN-02280",
+  "keyboard_projection_switch": "PASS",
+  "zoom_reset": "PASS",
+  "layouts": [
+    {
+      "width": 1440,
+      "scrollWidth": 1440,
+      "points": 8000
+    },
+    {
+      "width": 768,
+      "scrollWidth": 768,
+      "points": 8000
+    },
+    {
+      "width": 375,
+      "scrollWidth": 375,
+      "points": 8000
+    }
+  ]
+}
