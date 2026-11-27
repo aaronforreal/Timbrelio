@@ -33,3 +33,5 @@ Use CSV columns `participant,task,completed,seconds,assistance,comment`. Task ke
 ## Paper and outstanding evidence
 
 Use the [official ISMIR LaTeX template](https://github.com/ismir/paper_templates/tree/master/2026/latex) and insert `report-sections.tex` after its abstract. The source covers methods, results to collect, and limitations. The final paper needs full conventional and OpenL3 runs, listened examples, extraction and browser timings from the respective components, and the observed classmate sessions. For browser timings, report app startup and repeated filter/selection latency separately, with machine, track count and warm/cold state.
+
+Generate the paper’s numeric tables with `python -m timbrelio.report results/conventional-s42 results/openl3-s42 evaluation-tables.tex`. The command checks matching track IDs, genre labels and configurations, then compares Precision@5 on the intersection of eligible seeds. Place the generated file beside the paper’s main TeX file and include it with `\input{evaluation-tables}` in the results section.
