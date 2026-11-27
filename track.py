@@ -47,8 +47,14 @@ class Track:
             "title" : self.title,
             "artist" : self.artist,
             "album" : self.album,
-            "genres" : self.genres
+            "genres" : self.genres,
+            "mfcc_mean": self.mfcc_mean.tolist(),
+            "mfcc_std": self.mfcc_std.tolist(),
+            "centroid_mean": self.centroid_mean.tolist(),
+            "centroid_std": self.centroid_std.tolist(),
+            "zcr_mean": self.zcr_mean.tolist(),
+            "zcr_std": self.zcr_std.tolist(),
+            "rms_mean": self.rms_mean.tolist(),
+            "rms_std": self.rms_std.tolist()
         }
-
-        with open("tracks.json", "w") as file:
-            json.dump(data, file)
+        return data
