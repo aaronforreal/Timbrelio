@@ -228,6 +228,8 @@ Core work takes priority over stretch goals. The team will review progress each 
 
 **Role:** Projection, clustering, and system evaluation
 
+[Projection and clustering implementation](MEETH_OBJECTIVE_1.md) · [Evaluation commands, study protocol and report handoff](docs/evaluation/README.md)
+
 ### Objective 1: Evaluate projection and clustering methods
 
 - **PI1 (basic):** Implement reproducible PCA and UMAP projections.
