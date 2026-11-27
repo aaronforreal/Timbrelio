@@ -1,0 +1,24 @@
+% Include after the abstract in the course-approved ISMIR template.
+\section{Methods}
+We evaluate five nearest neighbours using cosine distance on standardized track
+features. PCA and UMAP maps are evaluated against the original neighbourhoods
+using trustworthiness and overlap. We compare k-means and HDBSCAN in feature
+space using silhouette, adjusted Rand index against top-level genre, and noise
+rate. Silhouette excludes noise; ARI includes noise assignments. Four
+one-factor sensitivity checks vary UMAP neighbourhood size and minimum
+distance, and HDBSCAN minimum cluster size and minimum samples.
+
+\section{Evaluation results}
+% Insert study.json eligible counts and Precision@5 for aligned representations.
+% Insert projection_metrics.csv and cluster_metrics.csv results and runtimes.
+% Justify selected configurations with scores, coverage and seed sensitivity.
+% Describe the audited listening examples with track IDs and audible evidence.
+% Report feature extraction time and measured app startup and interaction latency.
+% Insert observed task completion, median times and recurring participant feedback.
+
+\section{Limitations}
+Genre provides a coarse proxy for perceived similarity. Excluding incompletely
+labelled retrieval lists can change which seeds contribute to the reported
+mean. A two-dimensional map can distort distances. Runtime depends on hardware,
+cache state and compilation. A small convenience sample of classmates limits
+generalization of usability observations.

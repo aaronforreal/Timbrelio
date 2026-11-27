@@ -28,7 +28,7 @@ def read_coordinates(path: Path) -> pd.DataFrame:
         raise CoordinateDataError("Coordinate artifacts must use CSV format for this starter.")
 
     try:
-        coordinates = pd.read_csv(path)
+        coordinates = pd.read_csv(path, dtype={"track_id": "string"})
     except pd.errors.EmptyDataError as error:
         raise CoordinateDataError(
             "Coordinate artifact has no header. Expected track_id, x, and y."
