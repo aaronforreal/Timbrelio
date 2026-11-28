@@ -1,16 +1,20 @@
-# Session 01 Elephant
+# Practice example 01 Elephant
 
-## Session metadata
+> Practice example only; not a verified observed participant session. All task
+> outcomes, times, errors, narrative observations, and quoted comments below are
+> illustrative and must not be used as participant evidence.
 
-- Session ID: 01 Elephant
-- Date: November 16, 2026
-- Moderator: Aaron
-- App commit: `PRACTICE-BUILD`
-- Coordinate artifact/configuration: practice saved coordinates
-- Neighbour artifact/configuration: practice saved-neighbour data
-- Audio artifact/configuration: practice local audio
-- Browser and viewport: Chrome on a laptop, approximately 1366 × 768
-- Participant confirmed voluntary participation: yes
+## Example metadata
+
+- Example ID: 01 Elephant
+- Illustrative date: November 16, 2026
+- Moderator field (example): Aaron
+- App commit: `PRACTICE-BUILD` (placeholder; no tested build identified)
+- Coordinate artifact/configuration: practice saved coordinates (placeholder; no file identified)
+- Neighbour artifact/configuration: practice saved-neighbour data (placeholder; no file identified)
+- Audio artifact/configuration: practice local audio (placeholder; no files identified)
+- Browser and viewport (example): Chrome on a laptop, approximately 1366 × 768
+- Participant confirmed voluntary participation: example value only; no verified consent recorded
 
 ## Task 1 - Filter and inspect the map
 
@@ -27,7 +31,7 @@ point colours to change automatically. After noticing the separate colour contro
 they changed it to Genre, selected a track, and read its title from the details
 panel. They used Reset filters without help and returned the full map.
 
-Participant comment: “I thought picking Rock would also change the colours.”
+Illustrative participant comment: “I thought picking Rock would also change the colours.”
 
 ## Task 2 - Listen to the seed and neighbours
 
@@ -44,7 +48,7 @@ audio controls. They used Locate on map for the second neighbour and checked the
 details panel before answering that the original seed was still selected. They
 paused briefly to read the neighbour ranks but completed the task without help.
 
-Participant comment: “The numbers made the order easy to follow.”
+Illustrative participant comment: “The numbers made the order easy to follow.”
 
 ## Task 3 - Compare PCA and UMAP
 

@@ -1,4 +1,4 @@
-# A10 usability pilot
+# A10 usability pilot protocol and practice examples
 
 ## Objective
 
@@ -6,6 +6,20 @@ Write and pilot three short Timbrelio browsing tasks covering map/filter
 exploration, seed to neighbour listening, and PCA/UMAP comparison. This A10 pilot
 checks task wording and the browsing workflow. It is separate from Meet's later
 project-level evaluation with 4-6 classmates.
+
+## Evidence status
+
+The three files in `sessions/` are practice examples, not verified observed
+participant sessions. Their `PRACTICE-BUILD` identifier and generic coordinate,
+neighbour, and audio descriptions are placeholders; no exact app commit, archived
+build, or input artifacts are identified. Times, outcomes, comments, and consent
+entries illustrate how to fill out the form and must not be reported as measured
+usability results or evidence of participant consent.
+
+The original PR build (`6182eb395bb0f5409646d5512d0762962c82fc3b`) supports the
+map and colour controls but does not expose the full filtering, selection,
+playback, neighbour, and PCA/UMAP workflow below. It is not a tested pilot build.
+The protocol is intended for a later integrated build that passes preflight.
 
 ## Pilot setup
 
@@ -50,8 +64,8 @@ selected. The seed and at least two neighbours must have enabled audio controls.
 
 **Participant instruction:**
 
-> In the comparison area, play the selected seed. Then skip disabled audio
-> controls and play the two lowest-ranked neighbours whose controls are enabled.
+> In the comparison area, play the selected seed. Play the first two neighbours
+> with enabled audio, starting at rank 1 and skipping disabled controls.
 > Locate one of those neighbours on the map and tell me which track remains
 > selected.
 
@@ -84,7 +98,9 @@ PCA.
 errors, assistance, issue codes, the observable end state, a concise comment, and
 a factual observer note.
 
-## Pilot results
+## Practice example summary (not participant results)
+
+The following counts summarize only the illustrative records in `sessions/`.
 
 | Task | Completed | Median time | Major errors | Minor errors | Assistance |
 |---|---:|---:|---:|---:|---:|
@@ -92,21 +108,22 @@ a factual observer note.
 | 2 — Seed and neighbours | 3/3 | 96 s | 0 | 2 | 0 |
 | 3 — Compare PCA and UMAP | 3/3 | 82 s | 0 | 1 | 1 |
 
-Across `01 Elephant`, `02 Cat`, and `03 Rabbit`, all nine pilot tasks were
-completed. The records contain no major errors, five minor errors, and two
-assistance events.
+Across the practice examples `01 Elephant`, `02 Cat`, and `03 Rabbit`, all nine
+task entries are marked completed. The examples contain no major errors, five
+minor errors, and two assistance events. These are illustrative values, not
+observed completion rates, timings, or error counts.
 
-## Wording revisions from the pilot
+## Proposed wording revisions illustrated by the examples
 
-| Task | Observed friction | Revision made |
+| Task | Example friction | Proposed wording |
 |---|---|---|
 | 1 | Filtering and colouring were treated as the same action. | Name the Genres filter and Colour points by control separately. |
-| 2 | “Available” was unclear when an audio control was disabled. | Say to skip disabled controls and choose the two lowest enabled ranks. |
+| 2 | “Available” was unclear when an audio control was disabled. | Play the first two neighbours with enabled audio, starting at rank 1 and skipping disabled controls. |
 | 3 | The requested map comparison was too open-ended. | Give neutral centre/edge and grouped/spread-out cues. |
 
-## Issues observed in the pilot
+## Potential issues illustrated by the examples
 
-| ID | Severity | Evidence in pilot records | Recommended follow-up |
+| ID | Provisional severity | Practice example scenario | Recommended follow-up |
 |---|---|---|---|
 | PRACTICE-001 | Medium | 01 Elephant and 02 Cat confused filtering with colouring. | Separate filter and display controls. |
 | PRACTICE-002 | Medium | 02 Cat paused at disabled audio; 03 Rabbit briefly lost rank order. | Keep ranks beside players and clarify disabled controls. |
@@ -115,11 +132,18 @@ assistance events.
 
 ## Handoff and completion
 
-Hand the anonymized pilot notes to Meet for the later 4–6 classmate project
-evaluation. Keep these A10 pilot results distinct from Meet's evaluation summary,
-and track confirmed UI fixes through the follow-up issues or PRs in Aaron's
-deliverables plan.
+Hand this protocol and the clearly labelled practice examples to Meet as planning
+material for the later 4–6 classmate project evaluation. Validate the potential
+issues in actual sessions before treating them as findings or confirmed UI fixes.
+Track confirmed fixes through follow-up issues or PRs in Aaron's deliverables plan.
 
-A10 is complete when all three tasks have been run from clean states on one fixed
-build, outcomes and revisions are recorded, and every confirmed UI issue has a
-severity and follow-up disposition.
+An observed participant pilot remains outstanding. Before running it, record the
+exact commit SHA or archived build link, coordinate and neighbour file paths with
+checksums and configuration, and the audio manifest/root with file identifiers
+and checksums. Record the preflighted seed and neighbour IDs and use the same
+inputs for every session. Save actual anonymized records separately from these
+practice examples and replace the illustrative summary with measured results.
+
+A10 is not yet complete. It is complete when all three tasks have been run from
+clean states on one fixed build, outcomes and revisions are recorded, and every
+confirmed UI issue has a severity and follow-up disposition.

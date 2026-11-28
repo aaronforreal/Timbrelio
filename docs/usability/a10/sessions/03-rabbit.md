@@ -1,16 +1,20 @@
-# Session 03 Rabbit
+# Practice example 03 Rabbit
 
-## Session metadata
+> Practice example only; not a verified observed participant session. All task
+> outcomes, times, errors, narrative observations, and quoted comments below are
+> illustrative and must not be used as participant evidence.
 
-- Session ID: 03 Rabbit
-- Date: November 16, 2026
-- Moderator: Aaron
-- App commit: `PRACTICE-BUILD`
-- Coordinate artifact/configuration: practice saved coordinates
-- Neighbour artifact/configuration: practice saved-neighbour data
-- Audio artifact/configuration: practice local audio
-- Browser and viewport: Firefox on a laptop, approximately 1536 × 864
-- Participant confirmed voluntary participation: yes
+## Example metadata
+
+- Example ID: 03 Rabbit
+- Illustrative date: November 16, 2026
+- Moderator field (example): Aaron
+- App commit: `PRACTICE-BUILD` (placeholder; no tested build identified)
+- Coordinate artifact/configuration: practice saved coordinates (placeholder; no file identified)
+- Neighbour artifact/configuration: practice saved-neighbour data (placeholder; no file identified)
+- Audio artifact/configuration: practice local audio (placeholder; no files identified)
+- Browser and viewport (example): Firefox on a laptop, approximately 1536 × 864
+- Participant confirmed voluntary participation: example value only; no verified consent recorded
 
 ## Task 1 - Filter and inspect the map
 
@@ -26,7 +30,7 @@ Rabbit went directly to the Genres filter, selected Rock, and then changed the
 colour setting to Genre. They selected a visible point and read the track title
 from the details area. They found Reset filters immediately and restored the map.
 
-Participant comment: “The reset button was where I expected it to be.”
+Illustrative participant comment: “The reset button was where I expected it to be.”
 
 ## Task 2 - Listen to the seed and neighbours
 
@@ -39,11 +43,11 @@ Participant comment: “The reset button was where I expected it to be.”
 - Observable end state: The playback order was corrected, a neighbour was located, and the seed remained selected.
 
 Rabbit played the seed and the first playable neighbour. They initially selected
-the third playable neighbour before noticing that they had skipped a lower-ranked
-track, then corrected the order without help. They located the second neighbour
+the third playable neighbour before noticing that they had skipped a track with an earlier
+rank, then corrected the order without help. They located the second neighbour
 on the map and correctly identified that the seed remained selected.
 
-Participant comment: “I had to look back at the rank after scrolling.”
+Illustrative participant comment: “I had to look back at the rank after scrolling.”
 
 ## Task 3 - Compare PCA and UMAP
 
