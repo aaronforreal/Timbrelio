@@ -18,6 +18,7 @@ from timbrelio.ui.neighbours import (
     read_neighbours,
 )
 from timbrelio.ui.playback import PlaybackRow, comparison_playback_rows
+from timbrelio.ui.representation import compare_neighbours
 from timbrelio.ui.theme import APP_CSS
 from timbrelio.ui.track import (
     TrackDetails,
@@ -28,6 +29,7 @@ from timbrelio.ui.track import (
 DEFAULT_COORDINATES_PATH = Path("data/sample_coordinates.csv")
 DEFAULT_AUDIO_ROOT = Path("data/audio")
 DEFAULT_NEIGHBOURS_PATH = Path("data/sample_neighbours.csv")
+DEFAULT_OPENL3_NEIGHBOURS_PATH = Path("data/sample_openl3_neighbours.csv")
 SELECTED_TRACK_KEY = "selected_track_id"
 HIGHLIGHTED_NEIGHBOUR_KEY = "highlighted_neighbour_id"
 
@@ -66,6 +68,22 @@ def configured_neighbours_path() -> Path:
     return Path(os.environ.get("TIMBRELIO_NEIGHBOURS_PATH", DEFAULT_NEIGHBOURS_PATH))
 
 
+def configured_comparison_paths() -> dict[str, Path | None]:
+    """Use explicit artifacts for custom data; never substitute sample results."""
+
+    conventional = os.environ.get("TIMBRELIO_NEIGHBOURS_PATH")
+    openl3 = os.environ.get("TIMBRELIO_OPENL3_NEIGHBOURS_PATH")
+    sample_coordinates = configured_coordinates_path() == DEFAULT_COORDINATES_PATH
+    return {
+        "Conventional": Path(conventional) if conventional else (
+            DEFAULT_NEIGHBOURS_PATH if sample_coordinates else None
+        ),
+        "OpenL3": Path(openl3 or conventional) if openl3 or conventional else (
+            DEFAULT_OPENL3_NEIGHBOURS_PATH if sample_coordinates else None
+        ),
+    }
+
+
 def render_track_details(details: TrackDetails) -> None:
     """Render selected-track metadata above the comparison workflow."""
 
@@ -81,7 +99,7 @@ def render_track_details(details: TrackDetails) -> None:
         )
 
 
-def render_audio_control(row: PlaybackRow) -> None:
+def render_audio_control(row: PlaybackRow, *, namespace: str = "") -> None:
     """Render one available player or a rank-preserving disabled state."""
 
     if row.audio_source.available:
@@ -90,7 +108,7 @@ def render_audio_control(row: PlaybackRow) -> None:
     st.button(
         "Audio unavailable",
         disabled=True,
-        key=f"{row.component_key}-unavailable",
+        key=f"{namespace}{row.component_key}-unavailable",
     )
     st.caption(row.audio_source.message)
 
@@ -156,6 +174,104 @@ def render_comparison_playback(
                 ):
                     st.session_state[HIGHLIGHTED_NEIGHBOUR_KEY] = result.track_id
                     st.rerun()
+
+
+def render_representation_comparison(
+    seed: TrackDetails, coordinates: pd.DataFrame
+) -> None:
+    """Load each representation independently and compare the same seed ID."""
+
+    st.markdown("### Compare representations")
+    st.caption(
+        "Both lists use the same seed and saved original standardized feature space "
+        "results. Map distances are not used. Overlap describes these lists; "
+        "it does not establish which representation sounds more similar."
+    )
+    st.caption(
+        "Metric values are shown as saved, to three decimal places. "
+        "Their scales may differ between representations."
+    )
+    paths = configured_comparison_paths()
+    includes_synthetic = any(
+        path in (DEFAULT_NEIGHBOURS_PATH, DEFAULT_OPENL3_NEIGHBOURS_PATH)
+        for path in paths.values()
+    )
+    if includes_synthetic:
+        st.info("Comparison includes synthetic sample neighbours; these are not FMA retrieval results.")
+    results: dict[str, list[NeighbourResult]] = {}
+    failures: set[str] = set()
+    for representation, path in paths.items():
+        try:
+            if path is None:
+                raise NeighbourDataError("No neighbour artifact configured.")
+            saved = load_neighbours(str(path), path.stat().st_mtime_ns)
+            results[representation] = neighbours_for_seed(
+                saved, coordinates,
+                seed_track_id=seed.track_id, representation=representation,
+            )
+        except (NeighbourDataError, FileNotFoundError, OSError):
+            results[representation] = []
+            failures.add(representation)
+
+    overlap = compare_neighbours(results["Conventional"], results["OpenL3"])
+    if all(results.values()):
+        source_note = " (includes synthetic sample results)" if includes_synthetic else ""
+        st.write(f"Shared neighbours: {len(overlap.shared)}{source_note}")
+    else:
+        st.info("Overlap is incomplete because one or both saved lists are unavailable.")
+
+    seed_row = comparison_playback_rows(seed, [], coordinates, configured_audio_root())[0]
+    st.caption(f"SEED · {seed.track_id}")
+    render_audio_control(seed_row, namespace="representations-seed-")
+
+    # Streamlit stacks columns on narrow screens using the shared theme.
+    for column, representation in zip(st.columns(2), paths, strict=True):
+        with column:
+            st.subheader(representation)
+            st.caption(f"Seed: {seed.track_id}")
+            if paths[representation] in (
+                DEFAULT_NEIGHBOURS_PATH, DEFAULT_OPENL3_NEIGHBOURS_PATH
+            ):
+                st.caption("Synthetic sample neighbour list")
+            if representation in failures:
+                st.warning(
+                    f"{representation} saved neighbours could not be loaded. "
+                    "Check the configured CSV artifact. A malformed row invalidates "
+                    "the entire file; a shared combined file affects both lists."
+                )
+                continue
+            side = results[representation]
+            if not side:
+                st.info(f"No saved {representation} neighbours for this seed.")
+                continue
+            if len(side) < RESULT_LIMIT:
+                st.warning(f"Only {len(side)} of {RESULT_LIMIT} saved neighbours are available.")
+            rows = comparison_playback_rows(seed, side, coordinates, configured_audio_root())
+            other_representation = "OpenL3" if representation == "Conventional" else "Conventional"
+            other_side = results[other_representation]
+            for result, row in zip(side, rows[1:], strict=True):
+                with st.container(border=True):
+                    st.caption(f"RANK {result.rank} · {result.track_id}")
+                    st.markdown(f"**{row.title}**")
+                    st.caption(f"{row.artist} · {row.genre}")
+                    st.caption(f"{result.metric_name.title()} {result.metric_value:.3f}")
+                    if result.track_id in overlap.shared:
+                        st.write("Shared by both representations")
+                    elif len(other_side) == RESULT_LIMIT:
+                        st.write(f"Only in {representation} results")
+                    elif all(results.values()):
+                        st.write("Overlap unknown: other list incomplete")
+                    else:
+                        st.write("Overlap unknown: other list unavailable")
+                    render_audio_control(row, namespace=f"{representation}-")
+                    if st.button(
+                        "Locate on map",
+                        key=f"representations-{representation}-locate-{result.track_id}",
+                        disabled=not result.on_map,
+                        help="Highlight this track while keeping the same selected seed.",
+                    ):
+                        st.session_state[HIGHLIGHTED_NEIGHBOUR_KEY] = result.track_id
+                        st.rerun()
 
 
 def main() -> None:
@@ -271,6 +387,14 @@ def main() -> None:
         return
 
     render_track_details(details)
+
+    mode = st.radio(
+        "Neighbour view", ("Single representation", "Compare Conventional / OpenL3"),
+        key="neighbour-view",
+    )
+    if mode == "Compare Conventional / OpenL3":
+        render_representation_comparison(details, coordinates)
+        return
 
     try:
         neighbours_modified_at = (
