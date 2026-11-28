@@ -192,12 +192,15 @@ it does not compute projections or neighbours during interaction.
 
 Select a track, then choose **Compare Conventional / OpenL3** under **Neighbour
 view**. The default remains **Single representation**. Both lists use the same
-seed ID, retain saved ranks, and label shared neighbours and IDs appearing only
-in one displayed list. Each side has local playback and a Locate on map action
+seed ID, retain saved ranks, and label confirmed shared neighbours. Unmatched IDs
+are labelled as unique only when the opposite list has all five results;
+otherwise their overlap is unknown. Each side has local playback and a Locate on map action
 that retains the seed. Columns stack on narrow screens.
 
 The bundled lists are synthetic examples for `TRK-0001` and `TRK-0002`; they do
-not establish retrieval quality. To use project results, configure a combined
+not establish retrieval quality. Comparisons using bundled lists, including a
+bundled Conventional list beside a custom OpenL3 file, label the shared count
+itself as including synthetic sample results. To use project results, configure a combined
 CSV containing both `Conventional` and `OpenL3` rows:
 
 ```powershell
@@ -208,8 +211,12 @@ Alternatively, point `TIMBRELIO_NEIGHBOURS_PATH` at the conventional CSV and
 `TIMBRELIO_OPENL3_NEIGHBOURS_PATH` at a separate OpenL3 CSV. Each file uses the
 A6 schema: `seed_track_id`, `representation`, `neighbour_track_id`, `rank`, and
 exactly one of `distance` or `similarity`. Representation names match without
-case sensitivity. Each side is loaded independently, so one invalid/missing
-file does not hide the other list. Missing seed results and partial lists are
+case sensitivity. Separate files are loaded independently, so one invalid/missing
+file does not hide the other list. Validation applies to the entire CSV: one
+malformed row (including an invalid rank in either representation) invalidates
+the whole file. If both sides use that combined file, both become unavailable;
+use separate files when validation failures must be isolated between representations.
+Missing seed results and partial lists are
 reported explicitly; absent results never establish that a neighbour is unique.
 Distances/similarities are labelled as saved and displayed to three decimal
 places; values across representations need not share a comparable scale.

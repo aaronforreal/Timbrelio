@@ -153,3 +153,59 @@ def test_off_map_neighbour_keeps_rank_without_locate_or_audio(monkeypatch, tmp_p
     assert any(c.value == "RANK 4 · OFF-MAP" for c in app.caption)
     assert app.button(key="representations-OpenL3-locate-OFF-MAP").disabled
     assert app.button(key="OpenL3-comparison-playback-rank-4-OFF-MAP-unavailable").disabled
+
+
+@pytest.mark.parametrize("shared", [False, True])
+def test_nonempty_partial_lists_do_not_claim_unique_neighbours(monkeypatch, tmp_path, shared):
+    saved = tmp_path / "partial.csv"
+    saved.write_text(
+        "seed_track_id,representation,neighbour_track_id,rank,distance\n"
+        "TRK-0001,Conventional,TRK-0006,1,0.1\n"
+        "TRK-0001,OpenL3,TRK-0009,1,0.2\n"
+        + ("TRK-0001,OpenL3,TRK-0006,2,0.3\n" if shared else "")
+    )
+    monkeypatch.setenv("TIMBRELIO_NEIGHBOURS_PATH", str(saved))
+    app = comparison_app()
+    assert not any("Only in " in m.value for m in app.markdown)
+    assert sum(m.value == "Overlap unknown: other list incomplete" for m in app.markdown) == 2 - shared
+    assert sum(m.value == "Shared by both representations" for m in app.markdown) == 2 * shared
+    assert any(m.value == f"Shared neighbours: {int(shared)}" for m in app.markdown)
+
+
+def test_uniqueness_depends_on_opposite_list_completeness(monkeypatch, tmp_path):
+    saved = tmp_path / "partial.csv"
+    saved.write_text(
+        "seed_track_id,representation,neighbour_track_id,rank,distance\n"
+        "TRK-0001,OpenL3,OFF-MAP,1,0.2\n"
+    )
+    monkeypatch.setenv("TIMBRELIO_OPENL3_NEIGHBOURS_PATH", str(saved))
+    app = comparison_app()
+    assert sum(m.value == "Only in OpenL3 results" for m in app.markdown) == 1
+    assert not any(m.value == "Only in Conventional results" for m in app.markdown)
+    assert sum(m.value == "Overlap unknown: other list incomplete" for m in app.markdown) == 5
+
+
+def test_mixed_sources_label_the_overlap_summary(monkeypatch, tmp_path):
+    saved = tmp_path / "custom-openl3.csv"
+    saved.write_text(
+        "seed_track_id,representation,neighbour_track_id,rank,distance\n"
+        "TRK-0001,OpenL3,TRK-0006,1,0.2\n"
+    )
+    monkeypatch.setenv("TIMBRELIO_OPENL3_NEIGHBOURS_PATH", str(saved))
+    app = comparison_app()
+    assert any(m.value == "Shared neighbours: 1 (includes synthetic sample results)" for m in app.markdown)
+    assert any("Comparison includes synthetic sample neighbours" in i.value for i in app.info)
+
+
+def test_malformed_combined_file_explains_both_lists_unavailable(monkeypatch, tmp_path):
+    saved = tmp_path / "combined.csv"
+    saved.write_text(
+        "seed_track_id,representation,neighbour_track_id,rank,distance\n"
+        "TRK-0001,Conventional,TRK-0006,1,0.1\n"
+        "TRK-0001,OpenL3,TRK-0009,invalid,0.2\n"
+    )
+    monkeypatch.setenv("TIMBRELIO_NEIGHBOURS_PATH", str(saved))
+    app = comparison_app()
+    assert not any(c.value.startswith("RANK ") for c in app.caption)
+    assert sum("A malformed row invalidates the entire file" in w.value for w in app.warning) == 2
+    assert any("Overlap is incomplete" in i.value for i in app.info)

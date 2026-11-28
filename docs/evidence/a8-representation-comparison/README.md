@@ -29,6 +29,20 @@ pandas 2.2.3, NumPy 1.26.4, pytest 8.3.0 (project pins).
 The installed pytest-asyncio plugin emits its existing fixture-loop-scope
 deprecation warning; no tests fail.
 
+## PR review follow-up
+
+- `python -m pytest`: **64 passed** after the review fixes.
+- `git diff --check`: passed.
+- AppTest covers two nonempty partial lists with and without a shared ID,
+  asymmetric completeness, a synthetic Conventional list beside custom OpenL3
+  results, and an invalid OpenL3 rank in a combined CSV.
+- Shared labels remain confirmed matches. Unmatched rows claim uniqueness only
+  against a complete opposite list; partial opposite lists show overlap unknown.
+- Shared counts explicitly identify synthetic inputs, including mixed sources.
+- Combined CSV validation remains atomic: an invalid row makes both sides using
+  that file unavailable. The UI and README explain this; separate CSVs retain
+  independent failure handling.
+
 ## Screenshots
 
 These show the real app with bundled synthetic coordinates and saved neighbour

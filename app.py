@@ -191,13 +191,13 @@ def render_representation_comparison(
         "Metric values are shown as saved, to three decimal places. "
         "Their scales may differ between representations."
     )
-    if (
-        configured_coordinates_path() == DEFAULT_COORDINATES_PATH
-        and "TIMBRELIO_NEIGHBOURS_PATH" not in os.environ
-        and "TIMBRELIO_OPENL3_NEIGHBOURS_PATH" not in os.environ
-    ):
-        st.info("Synthetic sample neighbour lists; these are not FMA retrieval results.")
     paths = configured_comparison_paths()
+    includes_synthetic = any(
+        path in (DEFAULT_NEIGHBOURS_PATH, DEFAULT_OPENL3_NEIGHBOURS_PATH)
+        for path in paths.values()
+    )
+    if includes_synthetic:
+        st.info("Comparison includes synthetic sample neighbours; these are not FMA retrieval results.")
     results: dict[str, list[NeighbourResult]] = {}
     failures: set[str] = set()
     for representation, path in paths.items():
@@ -215,7 +215,8 @@ def render_representation_comparison(
 
     overlap = compare_neighbours(results["Conventional"], results["OpenL3"])
     if all(results.values()):
-        st.write(f"Shared neighbours: {len(overlap.shared)}")
+        source_note = " (includes synthetic sample results)" if includes_synthetic else ""
+        st.write(f"Shared neighbours: {len(overlap.shared)}{source_note}")
     else:
         st.info("Overlap is incomplete because one or both saved lists are unavailable.")
 
@@ -235,7 +236,8 @@ def render_representation_comparison(
             if representation in failures:
                 st.warning(
                     f"{representation} saved neighbours could not be loaded. "
-                    "Check the configured CSV artifact."
+                    "Check the configured CSV artifact. A malformed row invalidates "
+                    "the entire file; a shared combined file affects both lists."
                 )
                 continue
             side = results[representation]
@@ -245,6 +247,8 @@ def render_representation_comparison(
             if len(side) < RESULT_LIMIT:
                 st.warning(f"Only {len(side)} of {RESULT_LIMIT} saved neighbours are available.")
             rows = comparison_playback_rows(seed, side, coordinates, configured_audio_root())
+            other_representation = "OpenL3" if representation == "Conventional" else "Conventional"
+            other_side = results[other_representation]
             for result, row in zip(side, rows[1:], strict=True):
                 with st.container(border=True):
                     st.caption(f"RANK {result.rank} · {result.track_id}")
@@ -253,8 +257,10 @@ def render_representation_comparison(
                     st.caption(f"{result.metric_name.title()} {result.metric_value:.3f}")
                     if result.track_id in overlap.shared:
                         st.write("Shared by both representations")
-                    elif all(results.values()):
+                    elif len(other_side) == RESULT_LIMIT:
                         st.write(f"Only in {representation} results")
+                    elif all(results.values()):
+                        st.write("Overlap unknown: other list incomplete")
                     else:
                         st.write("Overlap unknown: other list unavailable")
                     render_audio_control(row, namespace=f"{representation}-")
